@@ -1,0 +1,82 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+
+<views:ValidatorContentPage x:TypeArguments="vm:TimesheetsFilterViewModel"
+                            xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                            xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                            xmlns:views="using:TimeSheet.Views"
+                            xmlns:models="using:TimeSheet.Models"
+                            xmlns:vm="using:TimeSheet.ViewModels.Timesheets"
+                            xmlns:interfaces="using:TimeSheet.Interfaces"
+                            x:Class="TimeSheet.Views.Timesheets.TimesheetsFilterPage"
+                            x:DataType="vm:TimesheetsFilterViewModel"
+                            Title="Timesheets Filters">
+
+    <ContentPage.Content>
+
+        <Grid RowDefinitions="Auto, *, Auto"
+              Padding="10">
+
+            <StackLayout Grid.Row="0"
+                         Spacing="10">
+
+                <Label Text="Project" />
+                <Picker ItemsSource="{Binding ProjectIdNameDtos}"
+                        ItemDisplayBinding="{Binding Name}"
+                        SelectedItem="{Binding SelectedProjectIdNameDto}" />
+
+                <Label Text="Client" />
+                <Picker ItemsSource="{Binding ClientIdNameDtos}"
+                        ItemDisplayBinding="{Binding Name}"
+                        SelectedItem="{Binding SelectedClientIdNameDto}" />
+
+                <Label Text="Status" />
+                <CollectionView ItemsSource="{Binding StatusCheckNames}">
+                    <CollectionView.ItemsLayout>
+                        <LinearItemsLayout Orientation="Horizontal" />
+                    </CollectionView.ItemsLayout>
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate x:DataType="interfaces:ICheckName">
+                            <Grid ColumnDefinitions="35,60"
+                                  VerticalOptions="Center">
+
+                                <CheckBox Grid.Column="0"
+                                          IsChecked="{Binding IsChecked}"
+                                          VerticalOptions="Center" />
+                                <Label Grid.Column="1"
+                                       Text="{Binding Name}"
+                                       VerticalOptions="Center" />
+                            </Grid>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+
+            </StackLayout>
+
+            <Grid Grid.Row="2"
+                  VerticalOptions="Center">
+
+                <HorizontalStackLayout HorizontalOptions="Center"
+                                       Spacing="10">
+
+                    <Button WidthRequest="80"
+                            BackgroundColor="DarkSeaGreen"
+                            Text="Update"
+                            Command="{Binding SaveCommand}" />
+
+                    <Button WidthRequest="80"
+                            Text="Clear"
+                            BackgroundColor="IndianRed"
+                            Command="{Binding DeleteCommand}" />
+                </HorizontalStackLayout>
+
+                <Button WidthRequest="80"
+                        HorizontalOptions="End"
+                        BackgroundColor="SlateGray"
+                        Text="Cancel"
+                        Command="{Binding CancelCommand}" />
+            </Grid>
+
+        </Grid>
+
+    </ContentPage.Content>
+</views:ValidatorContentPage>

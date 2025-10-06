@@ -1,0 +1,103 @@
+<views:ObservableContentPage x:TypeArguments="vm:ClientsViewModel"
+                             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                             xmlns:views="using:TimeSheet.Views"
+                             xmlns:vm="clr-namespace:TimeSheet.ViewModels.Clients"
+                             xmlns:dtos="using:TimeSheet.Models.Dtos"
+                             x:Class="TimeSheet.Views.Clients.ClientsPage"
+                             x:DataType="vm:ClientsViewModel"
+                             Title="Clients">
+    <ContentPage.Content>
+        <Grid RowDefinitions="Auto, *, Auto"
+              Margin="10, 0">
+
+            <Grid Grid.Row="0"
+                  Margin="0,5,0,0"
+                  ColumnDefinitions="*, Auto">
+
+                <Label Grid.Column="0"
+                       Margin="10,0,0,0"
+                       HorizontalTextAlignment="Start"
+                       VerticalTextAlignment="Center"
+                       Text="{Binding FilterNames}" />
+                
+                <Button Grid.Column="1"
+                        ImageSource="search_icon.png"
+                        Command="{Binding FilterCommand}" />
+            </Grid>
+
+            <CollectionView Grid.Row="1"
+                            x:Name="EntryCollectionView"
+                            Margin="0,10,0,0"
+                            ItemsSource="{Binding ClientDtos}"
+                            SelectedItem="{Binding SelectedClientsDto}"
+                            SelectionMode="Single">
+
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="dtos:ClientsDto">
+                        <Grid RowDefinitions="Auto,Auto,Auto"
+                              ColumnDefinitions="10,*"
+                              Padding="5,0,5,5">
+
+                            <Grid.GestureRecognizers>
+                                <TapGestureRecognizer
+                                    Command="{Binding Path=BindingContext.ItemTappedCommand,
+                                        Source={x:Reference EntryCollectionView}}"
+                                    CommandParameter="{Binding .}" />
+                            </Grid.GestureRecognizers>
+
+                            <Rectangle Grid.Row="0" Grid.Column="0"
+                                       Grid.ColumnSpan="2"
+                                       HeightRequest="5"
+                                       BackgroundColor="LightSlateGray" />
+
+                            <BoxView Grid.Row="1" Grid.Column="0"
+                                     Grid.RowSpan="2"
+                                     BackgroundColor="SteelBlue" />
+
+                            <Label Grid.Row="1" Grid.Column="1"
+                                   Margin="10,0,0,0"
+                                   FontSize="Small"
+                                   Text="{Binding Name}" />
+
+                            <Label Grid.Row="1" Grid.Column="1"
+                                   HorizontalOptions="End"
+                                   MaximumWidthRequest="500"
+                                   LineBreakMode="TailTruncation"
+                                   FontSize="Micro"
+                                   Text="{Binding ContactEmail}" />
+
+                            <Label Grid.Row="2" Grid.Column="1"
+                                   Margin="10,0,0,0"
+                                   FontSize="Micro"
+                                   Text="{Binding ContactName}" />
+
+                            <Label Grid.Row="2" Grid.Column="1"
+                                   Margin="0,0,5,0"
+                                   HorizontalOptions="End"
+                                   FontSize="Micro"
+                                   Text="{Binding ContactPhone}" />
+
+                        </Grid>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+
+            <HorizontalStackLayout Grid.Row="2"
+                                   Margin="0, 10"
+                                   VerticalOptions="Center"
+                                   HorizontalOptions="Center">
+
+                <Button Margin="0,0,10,0"
+                        WidthRequest="80"
+                        BackgroundColor="DarkSeaGreen"
+                        Text="Add"
+                        Command="{Binding AddCommand}" />
+
+            </HorizontalStackLayout>
+
+        </Grid>
+
+    </ContentPage.Content>
+
+</views:ObservableContentPage>

@@ -1,0 +1,96 @@
+using SQLite;
+using TimeSheet.Interfaces;
+using TimeSheet.Models.Entities;
+
+namespace TimeSheet.Services;
+
+public class DatabaseService : IDatabaseService {
+
+    private const SQLiteOpenFlags Flags = SQLiteOpenFlags.ReadWrite |
+                                          SQLiteOpenFlags.Create |
+                                          SQLiteOpenFlags.SharedCache;
+
+    public SQLiteAsyncConnection Db { get; }
+
+    public DatabaseService(string databaseName) {
+        var dbPath = Path.Combine(FileSystem.Current.AppDataDirectory, databaseName);
+        Db = new SQLiteAsyncConnection(dbPath, Flags, false);
+        
+        Task.Run(InitializeAsync).GetAwaiter().GetResult();
+    }
+
+    public async Task InitializeAsync() {
+        await CreateClientsTable();
+        await CreateProjectsTable();
+        await CreateTimesheetStatusTable();
+        await CreateTimesheetsTable();
+        await Db.ExecuteAsync("PRAGMA foreign_keys = ON;");
+    }
+
+    private async Task CreateClientsTable() {
+        await Db.CreateTableAsync<Client>();
+    }
+
+    private async Task CreateProjectsTable() {
+        await Db.ExecuteAsync("""
+                              CREATE TABLE IF NOT EXISTS Projects (
+                                  Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                                  Name TEXT(50) UNIQUE NOT NULL,
+                                  Description TEXT(500) NULL,
+                                  HourlyWage REAL NOT NULL,
+                                  ClientId INTEGER NULL,
+                                  FOREIGN KEY(ClientId) REFERENCES Clients(Id) ON DELETE SET NULL
+                              );
+                              CREATE INDEX projects_name_idx ON Projects (Name);
+                              CREATE INDEX projects_hourlywage_idx ON Projects (HourlyWage);
+                              CREATE INDEX projects_clientid_idx ON Projects (ClientId);
+                              """);
+    }
+
+    private async Task CreateTimesheetStatusTable() {
+        await Db.CreateTableAsync<TimesheetStatus>();
+
+        var statuses = new TimesheetStatus[] {
+            new() { Id = 1, Name = "Opened", ColorArgb = "#FFD700" },
+            new() { Id = 2, Name = "Invoiced", ColorArgb = "#B7410E" },
+            new() { Id = 3, Name = "Paid", ColorArgb = "#7BB369" },
+            new() { Id = 4, Name = "Voided", ColorArgb = "#001829" }
+        };
+
+        const string upsertSql = """
+                                 INSERT INTO TimesheetStatus (Id, Name, ColorArgb)
+                                 VALUES (?, ?, ?)
+                                 ON CONFLICT(Id) DO 
+                                 UPDATE SET
+                                     Name = excluded.Name,
+                                     ColorArgb = excluded.ColorArgb
+                                 WHERE Name != excluded.Name 
+                                    OR ColorArgb != excluded.ColorArgb
+                                 """;
+
+        await Db.RunInTransactionAsync((s) => {
+            foreach (var status in statuses) {
+                s.Execute(upsertSql, status.Id, status.Name, status.ColorArgb);
+            }
+        });
+    }
+
+    private async Task CreateTimesheetsTable() {
+        await Db.ExecuteAsync("""
+                              CREATE TABLE IF NOT EXISTS Timesheets (
+                                  Id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+                                  Date DATE NOT NULL,
+                                  StartTime TIME NOT NULL,
+                                  EndTime TIME NOT NULL,
+                                  Note TEXT(500) NULL,
+                                  StatusId INTEGER NULL,
+                                  ProjectId INTEGER NULL,
+                                  FOREIGN KEY(StatusId) REFERENCES TimesheetStatus(Id) ON DELETE SET NULL,
+                                  FOREIGN KEY(ProjectId) REFERENCES Projects(Id) ON DELETE SET NULL
+                              );
+                              CREATE INDEX timesheets_date_idx ON Timesheets (Date);
+                              CREATE INDEX timesheets_statusid_idx ON Timesheets (StatusId);
+                              CREATE INDEX timesheets_projectid_idx ON Timesheets (ProjectId);
+                              """);
+    }
+}
