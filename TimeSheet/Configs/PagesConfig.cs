@@ -1,6 +1,5 @@
 ﻿using TimeSheet.Extensions;
 using TimeSheet.Interfaces;
-using TimeSheet.Views;
 
 namespace TimeSheet.Configs;
 

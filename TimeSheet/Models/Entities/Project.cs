@@ -1,20 +1,21 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using SQLite;
+using Table = SQLite.TableAttribute;
 
-namespace TimeSheet.Models.Entities {
-    [SQLite.Table("Projects")]
-    public class Project : BaseEntity {
-        [Indexed(Unique = true)]
-        [MaxLength(100), Unique]
-        public string Name { get; set; }
+namespace TimeSheet.Models.Entities;
 
-        [MaxLength(500)]
-        public string Description { get; set; }
+[Table("Projects")]
+public class Project : BaseEntity {
+    [Indexed(Unique = true)]
+    [MaxLength(100), Unique]
+    public string Name { get; set; }
 
-        public decimal HourlyWage { get; set; }
+    [MaxLength(500)]
+    public string Description { get; set; }
 
-        [Indexed]
-        [ForeignKey(nameof(Client))]
-        public int? ClientId { get; set; }
-    }
+    public decimal HourlyWage { get; set; }
+
+    [Indexed]
+    [ForeignKey(nameof(Client))]
+    public int? ClientId { get; set; }
 }

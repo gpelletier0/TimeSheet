@@ -1,5 +1,4 @@
-﻿using TimeSheet.ViewModels;
-using ClientViewModel = TimeSheet.ViewModels.Clients.ClientViewModel;
+﻿using TimeSheet.ViewModels.Clients;
 
 namespace TimeSheet.Views.Clients;
 

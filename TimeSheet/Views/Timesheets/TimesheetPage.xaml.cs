@@ -1,5 +1,4 @@
-﻿using TimeSheet.ViewModels;
-using TimesheetViewModel = TimeSheet.ViewModels.Timesheets.TimesheetViewModel;
+﻿using TimeSheet.ViewModels.Timesheets;
 
 namespace TimeSheet.Views.Timesheets;
 
