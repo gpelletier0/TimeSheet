@@ -15,7 +15,7 @@ public class DatabaseService : IDatabaseService {
     public DatabaseService(string databaseName) {
         var dbPath = Path.Combine(FileSystem.Current.AppDataDirectory, databaseName);
         Db = new SQLiteAsyncConnection(dbPath, Flags, false);
-        
+
         Task.Run(InitializeAsync).GetAwaiter().GetResult();
     }
 
@@ -34,17 +34,18 @@ public class DatabaseService : IDatabaseService {
     private async Task CreateProjectsTable() {
         await Db.ExecuteAsync("""
                               CREATE TABLE IF NOT EXISTS Projects (
-                                  Id INTEGER PRIMARY KEY AUTOINCREMENT,
-                                  Name TEXT(50) UNIQUE NOT NULL,
+                                  Id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+                                  Name TEXT(50) NOT NULL,
                                   Description TEXT(500) NULL,
                                   HourlyWage REAL NOT NULL,
                                   ClientId INTEGER NULL,
                                   FOREIGN KEY(ClientId) REFERENCES Clients(Id) ON DELETE SET NULL
                               );
-                              CREATE INDEX projects_name_idx ON Projects (Name);
-                              CREATE INDEX projects_hourlywage_idx ON Projects (HourlyWage);
-                              CREATE INDEX projects_clientid_idx ON Projects (ClientId);
                               """);
+
+        await Db.ExecuteAsync("CREATE INDEX IF NOT EXISTS Projects_Name ON Projects (Name)");
+        await Db.ExecuteAsync("CREATE INDEX IF NOT EXISTS Projects_HourlyWage ON Projects (HourlyWage)");
+        await Db.ExecuteAsync("CREATE INDEX IF NOT EXISTS Projects_ClientId ON Projects (ClientId)");
     }
 
     private async Task CreateTimesheetStatusTable() {
@@ -77,20 +78,21 @@ public class DatabaseService : IDatabaseService {
 
     private async Task CreateTimesheetsTable() {
         await Db.ExecuteAsync("""
-                              CREATE TABLE IF NOT EXISTS Timesheets (
-                                  Id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-                                  Date DATE NOT NULL,
-                                  StartTime TIME NOT NULL,
-                                  EndTime TIME NOT NULL,
-                                  Note TEXT(500) NULL,
-                                  StatusId INTEGER NULL,
-                                  ProjectId INTEGER NULL,
-                                  FOREIGN KEY(StatusId) REFERENCES TimesheetStatus(Id) ON DELETE SET NULL,
-                                  FOREIGN KEY(ProjectId) REFERENCES Projects(Id) ON DELETE SET NULL
-                              );
-                              CREATE INDEX timesheets_date_idx ON Timesheets (Date);
-                              CREATE INDEX timesheets_statusid_idx ON Timesheets (StatusId);
-                              CREATE INDEX timesheets_projectid_idx ON Timesheets (ProjectId);
+                                    CREATE TABLE IF NOT EXISTS Timesheets (
+                                        Id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+                                        Date DATE NOT NULL,
+                                        StartTime TIME NOT NULL,
+                                        EndTime TIME NOT NULL,
+                                        Note TEXT(500) NULL,
+                                        StatusId INTEGER NULL,
+                                        ProjectId INTEGER NULL,
+                                        FOREIGN KEY(StatusId) REFERENCES TimesheetStatus(Id) ON DELETE SET NULL,
+                                        FOREIGN KEY(ProjectId) REFERENCES Projects(Id) ON DELETE SET NULL
+                                    );
                               """);
+
+        await Db.ExecuteAsync("CREATE INDEX IF NOT EXISTS Timesheets_Date ON Timesheets (Date)");
+        await Db.ExecuteAsync("CREATE INDEX IF NOT EXISTS Timesheets_StatusId ON Timesheets (StatusId)");
+        await Db.ExecuteAsync("CREATE INDEX IF NOT EXISTS Timesheets_ProjectId ON Timesheets (ProjectId)");
     }
 }

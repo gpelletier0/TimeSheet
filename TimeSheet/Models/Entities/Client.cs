@@ -4,7 +4,6 @@ namespace TimeSheet.Models.Entities;
 
 [Table("Clients")]
 public class Client : BaseEntity {
-    [Unique]
     [MaxLength(50)]
     [Indexed(Unique = true)]
     public string Name { get; set; }

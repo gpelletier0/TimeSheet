@@ -6,8 +6,8 @@ namespace TimeSheet.Models.Entities;
 
 [Table("Projects")]
 public class Project : BaseEntity {
-    [Indexed(Unique = true)]
-    [MaxLength(100), Unique]
+    [Indexed]
+    [MaxLength(100)]
     public string Name { get; set; }
 
     [MaxLength(500)]
