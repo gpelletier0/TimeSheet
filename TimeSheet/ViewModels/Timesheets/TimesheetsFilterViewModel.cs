@@ -11,7 +11,7 @@ namespace TimeSheet.ViewModels.Timesheets;
 public partial class TimesheetsFilterViewModel(
     IRepository<Project> projectRepo,
     IRepository<Client> clientRepo,
-    IRepository<TimesheetStatus> statusRepo) : ObservableValidatorViewModel {
+    IRepository<Status> statusRepo) : ObservableValidatorViewModel {
 
     [ObservableProperty]
     private ObservableCollection<IdNameDto> _projectIdNameDtos = [];

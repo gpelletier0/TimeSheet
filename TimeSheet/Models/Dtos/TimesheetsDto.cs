@@ -6,5 +6,5 @@ public class TimesheetsDto : BaseDto {
     public TimeSpan EndTime { get; set; }
     public string? ProjectName { get; set; }
     public decimal? ProjectHourlyWage { get; set; }
-    public string? StatusColorArgb { get; set; }
+    public string? ColorArgb { get; set; }
 }

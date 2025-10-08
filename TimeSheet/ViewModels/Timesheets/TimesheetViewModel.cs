@@ -12,7 +12,7 @@ namespace TimeSheet.ViewModels.Timesheets;
 public partial class TimesheetViewModel(
     IRepository<Timesheet> timesheetRepo,
     IRepository<Project> projectRepo,
-    IRepository<TimesheetStatus> statusRepo) : ObservableValidatorViewModel {
+    IRepository<Status> statusRepo) : ObservableValidatorViewModel {
 
     [ObservableProperty]
     [Required(ErrorMessage = "Date is required")]

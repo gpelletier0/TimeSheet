@@ -16,7 +16,7 @@ public class Timesheet : BaseEntity {
     public string? Note { get; set; }
 
     [Indexed]
-    [ForeignKey(nameof(TimesheetStatus))]
+    [ForeignKey(nameof(Status))]
     public int StatusId { get; set; }
 
     [Indexed]

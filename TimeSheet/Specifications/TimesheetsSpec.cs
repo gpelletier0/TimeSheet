@@ -33,10 +33,10 @@ public class TimesheetsSpec : ISpecification {
                 "t.EndTime      AS EndTime",
                 "p.Name         AS ProjectName",
                 "p.HourlyWage   AS ProjectHourlyWage",
-                "ts.ColorArgb   AS StatusColorArgb")
+                "s.ColorArgb    AS ColorArgb")
             .From("Timesheets t")
             .LeftJoin("Projects p", "t.ProjectId", "p.Id")
-            .LeftJoin("TimesheetStatus ts", "t.StatusId", "ts.Id")
+            .LeftJoin("Statuses s", "t.StatusId", "s.Id")
             .OrderBy("t.Date", Ascending);
 
         if (TimeFilter != TimePeriod.All) {

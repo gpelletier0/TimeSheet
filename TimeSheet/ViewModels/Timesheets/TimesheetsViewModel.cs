@@ -12,10 +12,10 @@ namespace TimeSheet.ViewModels.Timesheets {
     public partial class TimesheetsViewModel(IRepository<Timesheet> timesheetRepo) : ObservableViewModel {
 
         [ObservableProperty]
-        private ObservableCollection<string> _timeFilters = new(Enum.GetNames<TimePeriod>());
+        private ObservableCollection<string> _filters = new(Enum.GetNames<TimePeriod>());
 
         [ObservableProperty]
-        private TimePeriod _selectedTimeFilter;
+        private TimePeriod _selectedFilter;
 
         [ObservableProperty]
         private ObservableCollection<TimesheetsDto> _timesheetDtos = [];
@@ -36,15 +36,13 @@ namespace TimeSheet.ViewModels.Timesheets {
         }
 
         protected override Task OnAppearingAsync() {
-            SelectedTimeFilter = _timesheetsSpec.TimeFilter;
+            SelectedFilter = _timesheetsSpec.TimeFilter;
             FilterNames = _timesheetsSpec.GetFilterNames();
-            LoadTimesheetsCommand.ExecuteAsync(null);
             
-            return Task.CompletedTask;
+            return base.OnAppearingAsync();
         }
-
-        [RelayCommand]
-        private async Task LoadTimesheetsAsync() {
+        
+        protected override async Task LoadAsync() {
             var timesheets = await timesheetRepo.ListAsync<TimesheetsDto>(_timesheetsSpec);
             TimesheetDtos = new ObservableCollection<TimesheetsDto>(timesheets);
         }
@@ -67,8 +65,9 @@ namespace TimeSheet.ViewModels.Timesheets {
             await Shell.Current.GoToAsync(nameof(TimesheetPage), parameters);
         }
         
-        partial void OnSelectedTimeFilterChanged(TimePeriod value) {
+        partial void OnSelectedFilterChanged(TimePeriod value) {
             _timesheetsSpec.TimeFilter = value;
+            LoadCommand.ExecuteAsync(null);
         }
     }
 }

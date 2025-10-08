@@ -29,13 +29,12 @@ public partial class ClientsViewModel(IRepository<Client> clientRepo) : Observab
         }
     }
 
-    protected override async Task OnAppearingAsync() {
+    protected override Task OnAppearingAsync() {
         FilterNames = _clientsSpec.GetFilterNames();
-        await LoadClientsCommand.ExecuteAsync(null);
+        return base.OnAppearingAsync();
     }
-
-    [RelayCommand]
-    private async Task LoadClientsAsync() {
+    
+    protected override async Task LoadAsync() {
         var clients = await clientRepo.ListAsync<ClientsDto>(_clientsSpec);
         ClientDtos = new ObservableCollection<ClientsDto>(clients);
     }
