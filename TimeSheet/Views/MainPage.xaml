@@ -43,6 +43,15 @@
                             ImageSource="clients.png"
                             ContentLayout="Top"
                             Command="{Binding GoToClientsCommand}" />
+                    
+                    <Button Grid.Row="1" Grid.Column="0"
+                            Margin="5"
+                            CornerRadius="10"
+                            HeightRequest="120"
+                            Text="Invoices"
+                            ImageSource="invoice.png"
+                            ContentLayout="Top"
+                            Command="{Binding GoToInvoicesCommand}" />
 
                 </Grid>
 

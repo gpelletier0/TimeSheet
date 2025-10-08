@@ -1,4 +1,5 @@
 using CommunityToolkit.Mvvm.Input;
+using TimeSheet.ViewModels.Invoices;
 using TimeSheet.Views.Clients;
 using TimeSheet.Views.Projects;
 using TimeSheet.Views.Timesheets;
@@ -19,6 +20,11 @@ namespace TimeSheet.ViewModels {
         [RelayCommand]
         private async Task GoToTimesheetsAsync() {
             await Shell.Current.GoToAsync(nameof(TimesheetsPage));
+        }
+        
+        [RelayCommand]
+        private async Task GoToInvoicesAsync() {
+            await Shell.Current.GoToAsync(nameof(InvoicesPage));
         }
     }
 }
