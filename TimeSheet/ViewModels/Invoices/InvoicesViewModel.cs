@@ -8,7 +8,16 @@ using TimeSheet.Specifications;
 
 namespace TimeSheet.ViewModels.Invoices;
 
-public partial class InvoicesViewModel(IRepository<Invoice> invoiceRepo) : ObservableViewModel {
+public partial class InvoicesViewModel(
+    IRepository<Invoice> invoiceRepo,
+    IRepository<Client> clientRepo,
+    IRepository<Status> statusRepo) : ObservableViewModel {
+
+    [ObservableProperty]
+    private ObservableCollection<IdNameDto> _filters = [];
+
+    [ObservableProperty]
+    private IdNameDto _selectedFilter;
 
     [ObservableProperty]
     private ObservableCollection<IdNameDto> _clientIdNameDtos = [];
@@ -25,7 +34,9 @@ public partial class InvoicesViewModel(IRepository<Invoice> invoiceRepo) : Obser
     [ObservableProperty]
     private string _filterNames = string.Empty;
 
-    private InvoicesSpec _invoicesSpec = new();
+    private InvoicesSpec _invoicesSpec = new() {
+        StatusIds = [statusRepo.FirstIdOrDefault("Invoiced")]
+    };
 
     public override void ApplyQueryAttributes(IDictionary<string, object> query) {
         if (query.TryGetValue(nameof(InvoicesSpec), out var obj)
@@ -34,14 +45,14 @@ public partial class InvoicesViewModel(IRepository<Invoice> invoiceRepo) : Obser
         }
     }
 
-    protected override Task OnAppearingAsync() {
+    protected override async Task OnAppearingAsync() {
         FilterNames = _invoicesSpec.GetFilterNames();
-        return base.OnAppearingAsync();
+        await LoadPickerAsync();
     }
 
     protected override async Task LoadAsync() {
-        var timesheets = await invoiceRepo.ListAsync<InvoicesDto>(_invoicesSpec);
-        InvoiceDtos = new ObservableCollection<InvoicesDto>(timesheets);
+        var invoicesDtos = await invoiceRepo.ListAsync<InvoicesDto>(_invoicesSpec);
+        InvoiceDtos = new ObservableCollection<InvoicesDto>(invoicesDtos);
     }
 
     [RelayCommand]
@@ -60,5 +71,17 @@ public partial class InvoicesViewModel(IRepository<Invoice> invoiceRepo) : Obser
     private async Task ItemTappedAsync() {
         var parameters = new ShellNavigationQueryParameters { { nameof(BaseDto.Id), SelectedInvoiceDto.Id } };
         //await Shell.Current.GoToAsync(nameof(InvoicePage), parameters);
+    }
+
+    private async Task LoadPickerAsync() {
+        var clientIdNameDtos = await clientRepo.ListAsync<IdNameDto>();
+        Filters = new ObservableCollection<IdNameDto>(clientIdNameDtos);
+        Filters.Insert(0, new IdNameDto { Id = 0, Name = "All" });
+        SelectedFilter = Filters.FirstOrDefault(dto => dto.Id == _invoicesSpec.ClientId) ?? Filters.First();
+    }
+
+    partial void OnSelectedFilterChanged(IdNameDto value) {
+        _invoicesSpec.ClientId = value.Id;
+        LoadCommand.ExecuteAsync(null);
     }
 }
