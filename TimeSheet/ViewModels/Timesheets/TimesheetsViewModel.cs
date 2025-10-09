@@ -9,7 +9,7 @@ using TimeSheet.Specifications;
 using TimeSheet.Views.Timesheets;
 
 namespace TimeSheet.ViewModels.Timesheets {
-    public partial class TimesheetsViewModel(IRepository<Timesheet> timesheetRepo) : ObservableViewModel {
+    public partial class TimesheetsViewModel(IRepository<Timesheet> timesheetRepo, IRepository<Status> statusRepo) : ObservableViewModel {
 
         [ObservableProperty]
         private ObservableCollection<string> _filters = new(Enum.GetNames<TimePeriod>());
@@ -26,7 +26,9 @@ namespace TimeSheet.ViewModels.Timesheets {
         [ObservableProperty]
         private string _filterNames = string.Empty;
 
-        private TimesheetsSpec _timesheetsSpec = new();
+        private TimesheetsSpec _timesheetsSpec = new() {
+            StatusIds = [statusRepo.FirstIdOrDefault("Opened")]
+        };
 
         public override void ApplyQueryAttributes(IDictionary<string, object> query) {
             if (query.TryGetValue(nameof(TimesheetsSpec), out var obj)
@@ -35,13 +37,11 @@ namespace TimeSheet.ViewModels.Timesheets {
             }
         }
 
-        protected override Task OnAppearingAsync() {
+        protected override async Task OnAppearingAsync() {
             SelectedFilter = _timesheetsSpec.TimeFilter;
             FilterNames = _timesheetsSpec.GetFilterNames();
-            
-            return base.OnAppearingAsync();
         }
-        
+
         protected override async Task LoadAsync() {
             var timesheets = await timesheetRepo.ListAsync<TimesheetsDto>(_timesheetsSpec);
             TimesheetDtos = new ObservableCollection<TimesheetsDto>(timesheets);
@@ -64,7 +64,7 @@ namespace TimeSheet.ViewModels.Timesheets {
             var parameters = new ShellNavigationQueryParameters { { nameof(BaseDto.Id), SelectedTimesheetsDto.Id } };
             await Shell.Current.GoToAsync(nameof(TimesheetPage), parameters);
         }
-        
+
         partial void OnSelectedFilterChanged(TimePeriod value) {
             _timesheetsSpec.TimeFilter = value;
             LoadCommand.ExecuteAsync(null);

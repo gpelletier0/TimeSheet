@@ -4,6 +4,8 @@ using TimeSheet.Models.Entities;
 namespace TimeSheet.Interfaces;
 
 public interface IRepository<TEntity> where TEntity : BaseEntity {
+    public string? GetTableName();
+    public int FirstIdOrDefault(string name);
     Task<TDto?> FindAsync<TDto>(int id) where TDto : BaseDto, new();
     Task<TDto> FindAsync<TDto>(ISpecification spec) where TDto : BaseDto, new();
     Task<List<TDto>> ListAsync<TDto>();
