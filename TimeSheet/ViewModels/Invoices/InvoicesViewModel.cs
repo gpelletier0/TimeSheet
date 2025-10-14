@@ -5,6 +5,7 @@ using TimeSheet.Interfaces;
 using TimeSheet.Models.Dtos;
 using TimeSheet.Models.Entities;
 using TimeSheet.Specifications;
+using TimeSheet.Views.Invoices;
 
 namespace TimeSheet.ViewModels.Invoices;
 
@@ -58,7 +59,7 @@ public partial class InvoicesViewModel(
     [RelayCommand]
     private async Task FilterAsync() {
         var parameters = new ShellNavigationQueryParameters { { nameof(InvoicesSpec), _invoicesSpec } };
-        //await Shell.Current.GoToAsync(nameof(InvoicesFilterPage), parameters);
+        await Shell.Current.GoToAsync(nameof(InvoicesFilterPage), parameters);
     }
 
     [RelayCommand]
