@@ -83,13 +83,13 @@
                             <Label Grid.Row="2" Grid.Column="1"
                                    Margin="5,0,0,0"
                                    FontSize="Micro"
-                                   Text="{Binding IssueDate, StringFormat='{}{0:dd-MM-yyyy}'}" />
+                                   Text="{Binding IssueDate, StringFormat='Issue date: {0:dd-MM-yyyy}'}" />
 
                             <Label Grid.Row="2" Grid.Column="1"
                                    Margin="0,0,5,0"
                                    HorizontalTextAlignment="End"
                                    FontSize="Micro"
-                                   Text="{Binding DueDate, StringFormat='{}{0:dd-MM-yyyy}'}" />
+                                   Text="{Binding DueDate, StringFormat='Due date: {0:dd-MM-yyyy}'}" />
 
                         </Grid>
                     </DataTemplate>

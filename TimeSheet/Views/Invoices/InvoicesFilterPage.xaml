@@ -33,11 +33,13 @@
 
                 <Label Text="Issue date" />
                 <ndtp:NullableDateTimePicker Style="{StaticResource DefaultMauiDatePickerStyle}"
-                                             SelectedDateTime="{Binding IssueDate}" />
+                                             SelectedDateTime="{Binding IssueDate}" 
+                                             Format="yyyy-MM-dd"/>
 
                 <Label Text="Due date" />
                 <ndtp:NullableDateTimePicker Style="{StaticResource DefaultMauiDatePickerStyle}"
-                                             SelectedDateTime="{Binding DueDate}" />
+                                             SelectedDateTime="{Binding DueDate}"
+                                             Format="yyyy-MM-dd"/>
 
                 <Label Text="Status" />
                 <CollectionView ItemsSource="{Binding StatusCheckNames}">

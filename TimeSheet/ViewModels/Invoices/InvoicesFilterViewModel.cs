@@ -1,9 +1,11 @@
 ﻿using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
+using TimeSheet.Attributes;
 using TimeSheet.Interfaces;
 using TimeSheet.Models;
 using TimeSheet.Models.Entities;
 using TimeSheet.Specifications;
+using TimeSheet.Views.Invoices;
 
 namespace TimeSheet.ViewModels.Invoices;
 
@@ -16,12 +18,14 @@ public partial class InvoicesFilterViewModel(IRepository<Status> statusRepo) : O
     private DateTime? _issueDate;
 
     [ObservableProperty]
+    [DateAfterOrEqual(nameof(IssueDate))]
     private DateTime? _dueDate;
 
     [ObservableProperty]
     private ObservableCollection<CheckName<IdNameDto>> _statusCheckNames;
 
     private InvoicesSpec _invoicesSpec;
+    private bool _isInitialized;
 
     public override void ApplyQueryAttributes(IDictionary<string, object> query) {
         if (query.TryGetValue(nameof(InvoicesSpec), out var obj)
@@ -33,14 +37,24 @@ public partial class InvoicesFilterViewModel(IRepository<Status> statusRepo) : O
     protected override async Task OnAppearingAsync() {
         CanDelete = true;
 
+        if (_isInitialized) {
+            return;
+        }
+
         await LoadStatusCheckNamesAsync();
         GetSpec();
+
+        _isInitialized = true;
     }
 
     protected override async Task SaveAsync() {
+        if (!await ValidateViewModelAsync()) {
+            return;
+        }
+
         SetSpec();
-        var parameters = new ShellNavigationQueryParameters { { nameof(TimesheetsSpec), _invoicesSpec } };
-        await Shell.Current.GoToAsync(nameof(InvoicesSpec), parameters);
+        var parameters = new ShellNavigationQueryParameters { { nameof(InvoicesSpec), _invoicesSpec } };
+        await Shell.Current.GoToAsync(nameof(InvoicesPage), parameters);
     }
 
     protected override Task DeleteAsync() {

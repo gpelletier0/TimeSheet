@@ -103,16 +103,4 @@ public partial class ProjectViewModel(IRepository<Project> projectRepo, IReposit
         Description = dto.Description;
         ClientId = dto.ClientId == 0 ? null : dto.ClientId;
     }
-
-    private async Task<bool> ValidateViewModelAsync() {
-        ValidateAllProperties();
-        if (!HasErrors) {
-            return true;
-        }
-
-        var errors = string.Join(Environment.NewLine, GetErrors());
-        await Shell.Current.DisplayAlert("Validation Error", errors, "OK");
-
-        return false;
-    }
 }

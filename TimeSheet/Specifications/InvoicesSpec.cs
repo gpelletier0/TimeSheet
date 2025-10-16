@@ -39,11 +39,11 @@ public class InvoicesSpec : ISpecification {
         }
 
         if (IssueDate.HasValue) {
-            builder.Where("i.IssueDate", "=", IssueDate.Value);
+            builder.Where("i.IssueDate", "=", IssueDate.Value.ToString("yyyy-MM-dd"));
         }
 
         if (DueDate.HasValue) {
-            builder.Where("i.DueDate", "=", DueDate.Value);
+            builder.Where("i.DueDate", "=", DueDate.Value.ToString("yyyy-MM-dd"));
         }
 
         if (StatusIds.Count > 0) {
