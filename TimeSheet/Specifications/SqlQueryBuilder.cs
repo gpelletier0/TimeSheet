@@ -24,6 +24,15 @@ namespace TimeSheet.Specifications {
             return this;
         }
 
+        public SqlQueryBuilder SelectMax(string column, string? alias = null) {
+            var maxExpr = alias != null 
+                ? $"MAX({column}) AS {alias}" 
+                : $"MAX({column})";
+            
+            _selectColumns.Add(maxExpr);
+            return this;
+        }
+        
         public SqlQueryBuilder From(string tableName) {
             _tableName = tableName;
             return this;
