@@ -25,6 +25,12 @@ public class Repository<TEntity>(IDatabaseService dbService) : IRepository<TEnti
         return id ?? 0;
     }
 
+    public T Get<T>(ISpecification spec) {
+        var query = spec.GetQuery();
+        var result = dbService.Db.ExecuteScalar<T>(query.Sql, query.Parameters);
+        return result;
+    }
+
     public async Task<TDto?> FindAsync<TDto>(int id) where TDto : BaseDto, new() {
         var entity = await dbService.DbAsync.FindAsync<TEntity>(id);
 
@@ -36,10 +42,20 @@ public class Repository<TEntity>(IDatabaseService dbService) : IRepository<TEnti
         return dto;
     }
 
-    public async Task<TDto> FindAsync<TDto>(ISpecification spec) where TDto : BaseDto, new() {
+    public async Task<TDto?> FindAsync<TDto>(ISpecification spec) where TDto : BaseDto, new() {
         var query = spec.GetQuery();
         var dto = await dbService.DbAsync.FindWithQueryAsync<TDto>(query.Sql, query.Parameters);
         return dto;
+    }
+
+    public async Task<List<TDto>?> FindAllAsync<TDto>(IEnumerable<int> ids) where TDto : BaseDto, new() {
+        var entities = await dbService.DbAsync
+            .Table<TEntity>()
+            .Where(e => ids.Contains(e.Id))
+            .ToListAsync();
+        
+        var dtos = entities.Adapt<List<TDto>>();
+        return dtos;       
     }
 
     public async Task<List<TDto>> ListAsync<TDto>() {
@@ -50,7 +66,6 @@ public class Repository<TEntity>(IDatabaseService dbService) : IRepository<TEnti
 
     public async Task<List<TDto>> ListAsync<TDto>(ISpecification spec) where TDto : BaseDto, new() {
         var query = spec.GetQuery();
-        Debug.WriteLine(query.Sql);
         var dtos = await dbService.DbAsync.QueryAsync<TDto>(query.Sql, query.Parameters);
         return dtos;
     }
