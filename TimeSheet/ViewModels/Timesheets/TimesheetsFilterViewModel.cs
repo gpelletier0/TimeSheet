@@ -2,6 +2,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using TimeSheet.Interfaces;
 using TimeSheet.Models;
+using TimeSheet.Models.Dtos;
 using TimeSheet.Models.Entities;
 using TimeSheet.Specifications;
 using TimeSheet.Views.Timesheets;
