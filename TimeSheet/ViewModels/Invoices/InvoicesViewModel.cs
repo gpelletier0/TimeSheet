@@ -65,13 +65,13 @@ public partial class InvoicesViewModel(
     [RelayCommand]
     private async Task AddAsync() {
         var parameters = new ShellNavigationQueryParameters { { nameof(BaseDto.Id), 0 } };
-        //await Shell.Current.GoToAsync(nameof(InvoicePage), parameters);
+        await Shell.Current.GoToAsync(nameof(InvoicePage), parameters);
     }
 
     [RelayCommand]
     private async Task ItemTappedAsync() {
         var parameters = new ShellNavigationQueryParameters { { nameof(BaseDto.Id), SelectedInvoiceDto.Id } };
-        //await Shell.Current.GoToAsync(nameof(InvoicePage), parameters);
+        await Shell.Current.GoToAsync(nameof(InvoicePage), parameters);
     }
 
     private async Task LoadPickerAsync() {
