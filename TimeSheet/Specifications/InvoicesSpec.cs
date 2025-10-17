@@ -20,6 +20,7 @@ public class InvoicesSpec : ISpecification {
     public SqlQuery GetQuery() {
         var builder = new SqlQueryBuilder()
             .Select(
+                "i.Id",
                 "i.Number",
                 "c.Name         AS ClientName",
                 "i.IssueDate",
