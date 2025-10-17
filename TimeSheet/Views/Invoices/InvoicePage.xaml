@@ -5,6 +5,7 @@
                             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
                             xmlns:views="using:TimeSheet.Views"
                             xmlns:vm="using:TimeSheet.ViewModels.Invoices"
+                            xmlns:interfaces="using:TimeSheet.Interfaces"
                             x:Class="TimeSheet.Views.Invoices.InvoicePage"
                             x:DataType="vm:InvoiceViewModel">
 
@@ -25,10 +26,25 @@
                         ItemDisplayBinding="{Binding Name}"
                         SelectedItem="{Binding SelectedClientDto}" />
 
-                <Label Text="Project" />
-                <Picker ItemsSource="{Binding ProjectDtos}"
-                        ItemDisplayBinding="{Binding Name}"
-                        SelectedItem="{Binding SelectedProjectDto}" />
+                <Label Text="Projects" />
+                <CollectionView MinimumHeightRequest="60"
+                                MaximumHeightRequest="60"
+                                ItemsSource="{Binding ProjectDtos}">
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate x:DataType="interfaces:ICheckName">
+                            <StackLayout Padding="5">
+                                <Grid ColumnDefinitions="35,*"
+                                      HeightRequest="20">
+                                    <CheckBox Grid.Column="0"
+                                              IsChecked="{Binding IsChecked}" />
+                                    <Label Grid.Column="1"
+                                           VerticalOptions="Center"
+                                           Text="{Binding Name}" />
+                                </Grid>
+                            </StackLayout>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
 
                 <Label Text="Issue date" />
                 <DatePicker WidthRequest="120"
@@ -44,7 +60,7 @@
 
                 <Editor HeightRequest="80"
                         MaxLength="500"
-                        Placeholder="Note"
+                        Placeholder="Comments"
                         Text="{Binding Comments}" />
 
             </VerticalStackLayout>

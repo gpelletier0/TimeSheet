@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using CommunityToolkit.Mvvm.ComponentModel;
 using TimeSheet.Interfaces;
+using TimeSheet.Models;
 using TimeSheet.Models.Dtos;
 using TimeSheet.Models.Entities;
 using TimeSheet.Specifications;
@@ -18,7 +19,7 @@ public partial class InvoiceViewModel(
 
     [ReadOnly(true)]
     [ObservableProperty]
-    private string _number;
+    private string _number = string.Empty;
 
     [ObservableProperty]
     private ObservableCollection<IdNameDto> _clientDtos = [];
@@ -27,10 +28,7 @@ public partial class InvoiceViewModel(
     private IdNameDto? _selectedClientDto;
 
     [ObservableProperty]
-    private ObservableCollection<IdNameDto> _projectDtos = [];
-
-    [ObservableProperty]
-    private List<int> _projectIds = [];
+    private ObservableCollection<CheckName<IdNameDto>> _projectDtos = [];
 
     [ObservableProperty]
     private DateTime _issueDate;
@@ -39,10 +37,10 @@ public partial class InvoiceViewModel(
     private DateTime _dueDate;
 
     [ObservableProperty]
-    private List<int> _timesheeIds = [];
-
-    [ObservableProperty]
     private string? _comments;
+
+    private List<int> _projectIds = [];
+    private List<int> _timesheetIds = [];
 
     public override void ApplyQueryAttributes(IDictionary<string, object> query) {
         if (query.TryGetValue(nameof(BaseDto.Id), out var obj)
@@ -55,77 +53,101 @@ public partial class InvoiceViewModel(
         Title = IsNew ? "New Invoice" : "Edit Invoice";
         CanDelete = !IsNew;
 
-        await LoadClientsPickerAsync();
-        await GetInvoiceAsync();
+        await LoadClientsAsync();
+        await LoadInvoiceAsync();
     }
 
-    private async Task LoadClientsPickerAsync() {
+    private async Task LoadClientsAsync() {
         var clientDtos = await clientRepo.ListAsync<IdNameDto>();
         ClientDtos = new ObservableCollection<IdNameDto>(clientDtos);
     }
 
-    private async Task LoadProjectsPickerAsync(int clientId) {
+    private async Task LoadProjectsAsync(int clientId) {
         var projects = await projectRepo.ListAsync<IdNameDto>(new ProjectsSpec { ClientId = clientId });
-        ProjectDtos = new ObservableCollection<IdNameDto>(projects);
+        var projectCheckList = projects
+            .Select(p => new CheckName<IdNameDto> {
+                Value = p,
+                IsChecked = _projectIds.Contains(p.Id)
+            })
+            .ToList();
+
+        ProjectDtos = new ObservableCollection<CheckName<IdNameDto>>(projectCheckList);
     }
 
-    private async Task GetInvoiceAsync() {
+    private async Task LoadInvoiceAsync() {
         if (IsNew) {
-            Number = GetInvoiceNumber();
-            IssueDate = DateTime.UtcNow;
+            InitializeNewInvoice();
             return;
         }
 
+        await PopulateInvoiceDataAsync();
+    }
+
+    private void InitializeNewInvoice() {
+        Number = GenerateInvoiceNumber();
+        IssueDate = DateTime.UtcNow;
+    }
+
+    private async Task PopulateInvoiceDataAsync() {
         var invoiceDto = await invoiceRepo.FindAsync<InvoiceDto>(Id);
-        if (invoiceDto is not null) {
-            
-            var clientDto = await clientRepo.FindAsync<ClientDto>(invoiceDto.ClientId);
-            if (clientDto is null) {
-                return;
-            }
-            
-            Number = invoiceDto.Number;
-            SelectedClientDto = ClientDtos.SingleOrDefault(c => c.Id == clientDto.Id);
-            ProjectIds = invoiceDto.ProjectIdArray.Split(',').Select(int.Parse).ToList();
-            IssueDate = invoiceDto.IssueDate;
-            DueDate = invoiceDto.DueDate;
-            Comments = invoiceDto.Comments;
-            TimesheeIds = invoiceDto.TimesheetIdArray.Split(',').Select(int.Parse).ToList();
-
-            await LoadProjectsPickerAsync(invoiceDto.Id);
+        if (invoiceDto is null) {
+            return;
         }
+
+        var clientDto = await clientRepo.FindAsync<ClientDto>(invoiceDto.ClientId);
+        if (clientDto is null) {
+            return;
+        }
+
+        _projectIds = ParseIdArray(invoiceDto.ProjectIdArray);
+        _timesheetIds = ParseIdArray(invoiceDto.TimesheetIdArray);
+
+        Number = invoiceDto.Number;
+        SelectedClientDto = ClientDtos.SingleOrDefault(c => c.Id == clientDto.Id);
+        IssueDate = invoiceDto.IssueDate;
+        DueDate = invoiceDto.DueDate;
+        Comments = invoiceDto.Comments;
     }
 
-    private string GetInvoiceNumber() {
+    private static List<int> ParseIdArray(string idArray) {
+        if (string.IsNullOrWhiteSpace(idArray)) {
+            return [];
+        }
+
+        return idArray.Split(',', StringSplitOptions.RemoveEmptyEntries)
+            .Select(int.Parse)
+            .ToList();
+    }
+
+    private string GenerateInvoiceNumber() {
         var currentDate = DateTime.UtcNow;
-        var invoiceName = $"{InvoicePrefix}-{currentDate.Year}-{currentDate.Month}";
-        var number = GetNextSequenceNumber(invoiceName);
+        var invoicePrefix = $"{InvoicePrefix}-{currentDate.Year}-{currentDate.Month}";
+        var sequenceNumber = GetNextSequenceNumber(invoicePrefix);
 
-        return $"{invoiceName}-{number:000}";
+        return $"{invoicePrefix}-{sequenceNumber:000}";
     }
 
-    private int GetNextSequenceNumber(string name) {
+    private int GetNextSequenceNumber(string prefix) {
         var spec = new SelectMaxSpec {
             ColumnName = nameof(Invoice.Number),
             Start = -3,
             DataType = SqlDataType.Integer,
             Increment = 1,
             TableName = invoiceRepo.GetTableName()!,
-            Pattern = $"{name}%"
+            Pattern = $"{prefix}%"
         };
 
-        var result = invoiceRepo.Get<int>(spec);
-        return result;
+        return invoiceRepo.Get<int>(spec);
     }
 
     async partial void OnSelectedClientDtoChanged(IdNameDto? value) {
         try {
-            if (value == null) {
-                ProjectDtos = [];
+            if (value is null) {
+                ProjectDtos.Clear();
                 return;
             }
 
-            await LoadProjectsPickerAsync(value.Id);
+            await LoadProjectsAsync(value.Id);
         }
         catch (Exception e) {
             Debug.WriteLine(e);
