@@ -7,65 +7,75 @@
                             xmlns:vm="using:TimeSheet.ViewModels.Invoices"
                             xmlns:interfaces="using:TimeSheet.Interfaces"
                             x:Class="TimeSheet.Views.Invoices.InvoicePage"
-                            x:DataType="vm:InvoiceViewModel">
+                            x:DataType="vm:InvoiceViewModel"
+                            Title="{Binding Title}">
 
     <views:ValidatorContentPage.Content>
 
         <Grid RowDefinitions="Auto, *, Auto"
               Padding="10">
 
-            <VerticalStackLayout Grid.Row="0"
-                                 Spacing="10">
+            <ScrollView Grid.Row="1">
+                <VerticalStackLayout Spacing="10">
 
-                <Label Text="Invoice" />
-                <Entry Text="{Binding Number}"
-                       IsEnabled="False" />
+                    <Label Text="Invoice" />
+                    <Entry Text="{Binding Number}"
+                           IsEnabled="False" />
 
-                <Picker Title="Client"
-                        ItemsSource="{Binding ClientDtos}"
-                        ItemDisplayBinding="{Binding Name}"
-                        SelectedItem="{Binding SelectedClientDto}" />
+                    <Picker Title="Client"
+                            ItemsSource="{Binding ClientDtos}"
+                            ItemDisplayBinding="{Binding Name}"
+                            SelectedItem="{Binding SelectedClientDto}" />
 
-                <Label Text="Projects" />
-                <CollectionView MinimumHeightRequest="60"
-                                MaximumHeightRequest="60"
-                                ItemsSource="{Binding ProjectDtos}">
-                    <CollectionView.ItemTemplate>
-                        <DataTemplate x:DataType="interfaces:ICheckName">
-                            <StackLayout Padding="5">
-                                <Grid ColumnDefinitions="35,*"
-                                      HeightRequest="20">
-                                    <CheckBox Grid.Column="0"
-                                              IsChecked="{Binding IsChecked}" />
-                                    <Label Grid.Column="1"
-                                           VerticalOptions="Center"
-                                           Text="{Binding Name}" />
-                                </Grid>
-                            </StackLayout>
-                        </DataTemplate>
-                    </CollectionView.ItemTemplate>
-                </CollectionView>
+                    <Label Text="Projects" />
+                    <Border Stroke="Gray"
+                        StrokeThickness="1"
+                        Margin="0,0,10,0">
+                    <CollectionView MinimumHeightRequest="60"
+                                    MaximumHeightRequest="60"
+                                    ItemsSource="{Binding ProjectDtos}">
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate x:DataType="interfaces:ICheckName">
+                                <StackLayout Padding="5">
+                                    <Grid ColumnDefinitions="35,*"
+                                          HeightRequest="20">
+                                        <CheckBox Grid.Column="0"
+                                                  IsChecked="{Binding IsChecked}" />
+                                        <Label Grid.Column="1"
+                                               VerticalOptions="Center"
+                                               Text="{Binding Name}" />
+                                    </Grid>
+                                </StackLayout>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                </Border>
 
                 <Label Text="Issue date" />
-                <DatePicker WidthRequest="120"
-                            HorizontalOptions="Start"
-                            Format="dd-MM-yyyy"
-                            Date="{Binding IssueDate}" />
+                    <DatePicker WidthRequest="120"
+                                HorizontalOptions="Start"
+                                Format="dd-MM-yyyy"
+                                Date="{Binding IssueDate}" />
 
-                <Label Text="Due date" />
-                <DatePicker WidthRequest="120"
-                            HorizontalOptions="Start"
-                            Format="dd-MM-yyyy"
-                            Date="{Binding DueDate}" />
+                    <Label Text="Due date" />
+                    <DatePicker WidthRequest="120"
+                                HorizontalOptions="Start"
+                                Format="dd-MM-yyyy"
+                                Date="{Binding DueDate}" />
 
-                <Editor HeightRequest="80"
-                        MaxLength="500"
-                        Placeholder="Comments"
-                        Text="{Binding Comments}" />
+                    <Button Text="Select timesheets" 
+                            Command="{Binding SelectTimesheetsCommand}"/>
 
-            </VerticalStackLayout>
+                    <Editor HeightRequest="80"
+                            MaxLength="500"
+                            Placeholder="Comments"
+                            Text="{Binding Comments}" />
+
+                </VerticalStackLayout>
+            </ScrollView>
 
             <Grid Grid.Row="2"
+                  Margin="0,10,0,0"
                   VerticalOptions="Center">
 
                 <HorizontalStackLayout HorizontalOptions="Center"

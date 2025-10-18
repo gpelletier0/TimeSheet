@@ -1,4 +1,5 @@
 ﻿using System.Collections.ObjectModel;
+using System.Diagnostics;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using TimeSheet.Interfaces;
@@ -46,14 +47,9 @@ public partial class InvoicesViewModel(
         }
     }
 
-    protected override async Task OnAppearingAsync() {
+    protected override async Task LoadAsync() {
         FilterNames = _invoicesSpec.GetFilterNames();
         await LoadPickerAsync();
-    }
-
-    protected override async Task LoadAsync() {
-        var invoicesDtos = await invoiceRepo.ListAsync<InvoicesDto>(_invoicesSpec);
-        InvoiceDtos = new ObservableCollection<InvoicesDto>(invoicesDtos);
     }
 
     [RelayCommand]
@@ -76,13 +72,24 @@ public partial class InvoicesViewModel(
 
     private async Task LoadPickerAsync() {
         var clientIdNameDtos = await clientRepo.ListAsync<IdNameDto>();
+        clientIdNameDtos.Insert(0, new IdNameDto { Id = 0, Name = "All" });
+        
         Filters = new ObservableCollection<IdNameDto>(clientIdNameDtos);
-        Filters.Insert(0, new IdNameDto { Id = 0, Name = "All" });
         SelectedFilter = Filters.FirstOrDefault(dto => dto.Id == _invoicesSpec.ClientId) ?? Filters.First();
     }
 
-    partial void OnSelectedFilterChanged(IdNameDto value) {
-        _invoicesSpec.ClientId = value.Id;
-        LoadCommand.ExecuteAsync(null);
+    private async Task PopulateInvoicesAsync() {
+        var invoicesDtos = await invoiceRepo.ListAsync<InvoicesDto>(_invoicesSpec);
+        InvoiceDtos = new ObservableCollection<InvoicesDto>(invoicesDtos);
+    }
+
+    async partial void OnSelectedFilterChanged(IdNameDto value) {
+        try {
+            _invoicesSpec.ClientId = value.Id;
+            await PopulateInvoicesAsync();
+        }
+        catch (Exception e) {
+            Debug.WriteLine(e);
+        }
     }
 }

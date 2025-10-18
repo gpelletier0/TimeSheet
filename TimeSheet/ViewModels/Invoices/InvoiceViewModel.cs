@@ -1,12 +1,15 @@
 ﻿using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Text.Json;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using TimeSheet.Interfaces;
 using TimeSheet.Models;
 using TimeSheet.Models.Dtos;
 using TimeSheet.Models.Entities;
 using TimeSheet.Specifications;
+using TimeSheet.Views.Invoices;
 
 namespace TimeSheet.ViewModels.Invoices;
 
@@ -40,7 +43,7 @@ public partial class InvoiceViewModel(
     private string? _comments;
 
     private List<int> _projectIds = [];
-    private List<int> _timesheetIds = [];
+    private int[] _timesheetIds = [];
 
     public override void ApplyQueryAttributes(IDictionary<string, object> query) {
         if (query.TryGetValue(nameof(BaseDto.Id), out var obj)
@@ -57,6 +60,12 @@ public partial class InvoiceViewModel(
         await LoadInvoiceAsync();
     }
 
+    [RelayCommand]
+    private async Task SelectTimesheetsAsync() {
+        var parameters = new ShellNavigationQueryParameters { { nameof(BaseDto.Id), Id } };
+        await Shell.Current.GoToAsync(nameof(InvoiceTimesheetsPage), parameters);
+    }
+    
     private async Task LoadClientsAsync() {
         var clientDtos = await clientRepo.ListAsync<IdNameDto>();
         ClientDtos = new ObservableCollection<IdNameDto>(clientDtos);
@@ -86,6 +95,7 @@ public partial class InvoiceViewModel(
     private void InitializeNewInvoice() {
         Number = GenerateInvoiceNumber();
         IssueDate = DateTime.UtcNow;
+        DueDate = DateTime.UtcNow.AddMonths(1);
     }
 
     private async Task PopulateInvoiceDataAsync() {
@@ -99,24 +109,14 @@ public partial class InvoiceViewModel(
             return;
         }
 
-        _projectIds = ParseIdArray(invoiceDto.ProjectIdArray);
-        _timesheetIds = ParseIdArray(invoiceDto.TimesheetIdArray);
+        _projectIds = JsonSerializer.Deserialize<List<int>>(invoiceDto.ProjectIdArray) ?? [];
+        _timesheetIds = JsonSerializer.Deserialize<int[]>(invoiceDto.TimesheetIdArray) ?? [];
 
         Number = invoiceDto.Number;
         SelectedClientDto = ClientDtos.SingleOrDefault(c => c.Id == clientDto.Id);
         IssueDate = invoiceDto.IssueDate;
         DueDate = invoiceDto.DueDate;
         Comments = invoiceDto.Comments;
-    }
-
-    private static List<int> ParseIdArray(string idArray) {
-        if (string.IsNullOrWhiteSpace(idArray)) {
-            return [];
-        }
-
-        return idArray.Split(',', StringSplitOptions.RemoveEmptyEntries)
-            .Select(int.Parse)
-            .ToList();
     }
 
     private string GenerateInvoiceNumber() {
