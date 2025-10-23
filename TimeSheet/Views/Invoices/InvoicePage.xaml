@@ -29,29 +29,29 @@
 
                     <Label Text="Projects" />
                     <Border Stroke="Gray"
-                        StrokeThickness="1"
-                        Margin="0,0,10,0">
-                    <CollectionView MinimumHeightRequest="60"
-                                    MaximumHeightRequest="60"
-                                    ItemsSource="{Binding ProjectDtos}">
-                        <CollectionView.ItemTemplate>
-                            <DataTemplate x:DataType="interfaces:ICheckName">
-                                <StackLayout Padding="5">
-                                    <Grid ColumnDefinitions="35,*"
-                                          HeightRequest="20">
-                                        <CheckBox Grid.Column="0"
-                                                  IsChecked="{Binding IsChecked}" />
-                                        <Label Grid.Column="1"
-                                               VerticalOptions="Center"
-                                               Text="{Binding Name}" />
-                                    </Grid>
-                                </StackLayout>
-                            </DataTemplate>
-                        </CollectionView.ItemTemplate>
-                    </CollectionView>
-                </Border>
+                            StrokeThickness="1"
+                            Margin="0,0,10,0">
+                        <CollectionView MinimumHeightRequest="60"
+                                        MaximumHeightRequest="60"
+                                        ItemsSource="{Binding ProjectDtos}">
+                            <CollectionView.ItemTemplate>
+                                <DataTemplate x:DataType="interfaces:ICheckName">
+                                    <StackLayout Padding="5">
+                                        <Grid ColumnDefinitions="35,*"
+                                              HeightRequest="20">
+                                            <CheckBox Grid.Column="0"
+                                                      IsChecked="{Binding IsChecked}" />
+                                            <Label Grid.Column="1"
+                                                   VerticalOptions="Center"
+                                                   Text="{Binding Name}" />
+                                        </Grid>
+                                    </StackLayout>
+                                </DataTemplate>
+                            </CollectionView.ItemTemplate>
+                        </CollectionView>
+                    </Border>
 
-                <Label Text="Issue date" />
+                    <Label Text="Issue date" />
                     <DatePicker WidthRequest="120"
                                 HorizontalOptions="Start"
                                 Format="dd-MM-yyyy"
@@ -63,8 +63,8 @@
                                 Format="dd-MM-yyyy"
                                 Date="{Binding DueDate}" />
 
-                    <Button Text="Select timesheets" 
-                            Command="{Binding SelectTimesheetsCommand}"/>
+                    <Button Text="Timesheets"
+                            Command="{Binding SelectTimesheetsCommand}" />
 
                     <Editor HeightRequest="80"
                             MaxLength="500"
