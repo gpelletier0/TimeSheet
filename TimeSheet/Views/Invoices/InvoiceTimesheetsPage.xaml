@@ -18,6 +18,7 @@
             <converters:TimeSpanSubtractionConverter x:Key="TimeSpanSubtractionConverter" />
             <converters:TimeBillingConverter x:Key="TimeBillingConverter" />
             <toolkit:EnumToIntConverter x:Key="EnumToIntConverter" />
+            <toolkit:EnumToBoolConverter x:Key="EnumToBoolConverter" />
         </ResourceDictionary>
     </ContentPage.Resources>
 
@@ -29,11 +30,36 @@
                   Margin="0,5"
                   ColumnDefinitions="Auto, *, Auto">
 
-                <Picker Grid.Column="0"
-                        Margin="10,0,0,0"
-                        WidthRequest="100"
-                        ItemsSource="{Binding TimePeriodFilter}"
-                        SelectedIndex="{Binding SelectedPeriodFilter, Converter={StaticResource EnumToIntConverter}, ConverterParameter={x:Type models:TimePeriod}}" />
+                <Grid Grid.Column="0"
+                      ColumnDefinitions="Auto, Auto">
+                    <Picker Grid.Column="0"
+                            Margin="10,0,0,0"
+                            WidthRequest="100"
+                            ItemsSource="{Binding TimePeriodFilter}"
+                            SelectedIndex="{Binding SelectedPeriodFilter, 
+                                Converter={StaticResource EnumToIntConverter}, 
+                                ConverterParameter={x:Type models:TimePeriod}}" />
+
+                    <Picker Grid.Column="1"
+                            Margin="10,0,0,0"
+                            WidthRequest="100"
+                            ItemsSource="{Binding MonthFilter}"
+                            SelectedIndex="{Binding SelectedMonthFilter, 
+                                Converter={StaticResource EnumToIntConverter}, 
+                                ConverterParameter={x:Type models:Month}}"
+                            IsVisible="{Binding SelectedPeriodFilter, 
+                                Converter={StaticResource EnumToBoolConverter}, 
+                                ConverterParameter={x:Static models:TimePeriod.Month}}" />
+
+                    <Picker Grid.Column="1"
+                            Margin="10,0,0,0" 
+                            WidthRequest="100"
+                            ItemsSource="{Binding YearFilter}"
+                            SelectedIndex="{Binding SelectedYearFilter}"
+                            IsVisible="{Binding SelectedPeriodFilter, 
+                                Converter={StaticResource EnumToBoolConverter}, 
+                                ConverterParameter={x:Static models:TimePeriod.Year}}" />
+                </Grid>
 
                 <Button Grid.Column="2"
                         Margin="0,0,10,0"
@@ -42,7 +68,7 @@
             </Grid>
 
             <CollectionView Grid.Row="1"
-                            Margin="10,0,0,0"
+                            Margin="10,5,0,0"
                             ItemsSource="{Binding InvoiceTimesheetDtos}">
 
                 <CollectionView.ItemTemplate>

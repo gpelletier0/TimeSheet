@@ -16,12 +16,22 @@ public partial class InvoiceTimesheetsViewModel : ObservableValidatorViewModel {
     private TimePeriod _selectedPeriodFilter = TimePeriod.Month;
 
     [ObservableProperty]
+    private Month _selectedMonthFilter = Month.Current;
+
+    [ObservableProperty]
     private ObservableCollection<InvoiceTimesheetDto> _invoiceTimesheetDtos = [];
 
     private readonly IRepository<Invoice> _invoiceRepo;
     private readonly IRepository<Timesheet> _timesheetRepo;
 
     public TimePeriod[] TimePeriodFilter => Enum.GetValues<TimePeriod>();
+    public Month[] MonthFilter => Enum.GetValues<Month>();
+
+    public List<string> YearFilter => _timesheetRepo.GetAll<string>(new DistinctTimeSpec() {
+        ColumnName = nameof(Timesheet.Date),
+        TableName = _timesheetRepo.GetTableName() ?? "Timesheets",
+        FormatSpecifier = "Y"
+    });
 
     public InvoiceTimesheetsViewModel(IRepository<Invoice> invoiceRepo, IRepository<Timesheet> timesheetRepo) {
         _invoiceRepo = invoiceRepo;
@@ -57,7 +67,7 @@ public partial class InvoiceTimesheetsViewModel : ObservableValidatorViewModel {
             dto.IsChecked = true;
         }
     }
-    
+
     private async Task SetInvoiceTimesheetDtos(HashSet<int> projectIs) {
         var invoiceTimesheetDtos = await _timesheetRepo.ListAsync<InvoiceTimesheetDto>(
             new InvoiceTimesheetsSpec {

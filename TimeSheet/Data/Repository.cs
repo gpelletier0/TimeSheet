@@ -31,6 +31,12 @@ public class Repository<TEntity>(IDatabaseService dbService) : IRepository<TEnti
         return result;
     }
 
+    public List<T> GetAll<T>(ISpecification spec) {
+        var query = spec.GetQuery();
+        var result = dbService.Db.QueryScalars<T>(query.Sql, query.Parameters);
+        return result;
+    }
+
     public async Task<TDto?> FindAsync<TDto>(int id) where TDto : BaseDto, new() {
         var entity = await dbService.DbAsync.FindAsync<TEntity>(id);
 
@@ -53,9 +59,9 @@ public class Repository<TEntity>(IDatabaseService dbService) : IRepository<TEnti
             .Table<TEntity>()
             .Where(e => ids.Contains(e.Id))
             .ToListAsync();
-        
+
         var dtos = entities.Adapt<List<TDto>>();
-        return dtos;       
+        return dtos;
     }
 
     public async Task<List<TDto>> ListAsync<TDto>() {
