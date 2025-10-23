@@ -37,9 +37,11 @@ namespace TimeSheet.ViewModels.Timesheets {
             }
         }
 
-        protected override async Task OnAppearingAsync() {
-            SelectedFilter = _timesheetsSpec.TimeFilter;
+        protected override Task OnAppearingAsync() {
+            SelectedFilter = TimePeriod.Month;
             FilterNames = _timesheetsSpec.GetFilterNames();
+            
+            return Task.CompletedTask;
         }
 
         protected override async Task LoadAsync() {

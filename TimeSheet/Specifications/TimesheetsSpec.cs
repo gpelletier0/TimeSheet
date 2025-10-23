@@ -6,21 +6,12 @@ using TimeSheet.Models;
 namespace TimeSheet.Specifications;
 
 public class TimesheetsSpec : ISpecification {
-    public TimePeriod TimeFilter { get; set; } = TimePeriod.Month;
+    public TimePeriod TimeFilter { get; set; }
+    public DateTime? StartDate { get; set; }
     public int ProjectId { get; set; }
     public int ClientId { get; set; }
     public HashSet<int> StatusIds { get; set; } = [];
     public bool Ascending { get; set; } = false;
-
-    private static (DateTime startTime, DateTime endTime) GetDatePeriods(TimePeriod timeFilter) {
-        return timeFilter switch {
-            TimePeriod.Day => (DateTime.UtcNow.Date, DateTime.UtcNow.Date),
-            TimePeriod.Week => DateTime.UtcNow.Date.WeekPeriod(),
-            TimePeriod.Month => DateTime.UtcNow.Date.MonthPeriod(),
-            TimePeriod.Year => DateTime.UtcNow.Date.YearPeriod(),
-            _ => throw new ArgumentOutOfRangeException(nameof(timeFilter), timeFilter, null)
-        };
-    }
 
     private bool HasActiveFilters() => ProjectId > 0 || ClientId > 0 || StatusIds.Count > 0;
 
@@ -41,7 +32,7 @@ public class TimesheetsSpec : ISpecification {
 
         if (TimeFilter != TimePeriod.All) {
             try {
-                var dates = GetDatePeriods(TimeFilter);
+                var dates = StartDate?.GetDatePeriods(TimeFilter) ?? DateTime.UtcNow.GetDatePeriods(TimeFilter);
                 builder.WhereBetween("t.Date", dates.startTime, dates.endTime);
             }
             catch (Exception e) {

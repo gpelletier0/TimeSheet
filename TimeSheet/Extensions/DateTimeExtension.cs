@@ -1,4 +1,6 @@
-﻿namespace TimeSheet.Extensions;
+﻿using TimeSheet.Models;
+
+namespace TimeSheet.Extensions;
 
 public static class DateTimeExtension {
     public static (DateTime startTime, DateTime endTime) WeekPeriod(this DateTime date) {
@@ -18,5 +20,15 @@ public static class DateTimeExtension {
         var startDate = new DateTime(date.Year, 1, 1);
         var endDate = startDate.AddYears(1).AddDays(-1);
         return (startDate, endDate);
+    }
+
+    public static (DateTime startTime, DateTime endTime) GetDatePeriods(this DateTime startDate, TimePeriod timeFilter) {
+        return timeFilter switch {
+            TimePeriod.Day => (startDate.Date, startDate.Date),
+            TimePeriod.Week => startDate.WeekPeriod(),
+            TimePeriod.Month => startDate.MonthPeriod(),
+            TimePeriod.Year => startDate.YearPeriod(),
+            _ => throw new ArgumentOutOfRangeException(nameof(timeFilter), timeFilter, null)
+        };
     }
 }
