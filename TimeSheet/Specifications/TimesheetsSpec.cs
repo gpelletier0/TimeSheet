@@ -33,7 +33,7 @@ public class TimesheetsSpec : ISpecification {
         if (TimeFilter != TimePeriod.All) {
             try {
                 var dates = StartDate?.GetDatePeriods(TimeFilter) ?? DateTime.UtcNow.GetDatePeriods(TimeFilter);
-                builder.WhereBetween("t.Date", dates.startTime, dates.endTime);
+                builder.WhereBetween("t.Date", dates.startDate, dates.endDate);
             }
             catch (Exception e) {
                 Debug.WriteLine(e);
