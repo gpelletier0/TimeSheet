@@ -1,7 +1,6 @@
 ﻿namespace TimeSheet.Models;
 
 public enum Month {
-    Current = 0,
     January = 1,
     February = 2,
     March = 3,
