@@ -1,14 +1,11 @@
-﻿using System.Diagnostics;
-using TimeSheet.Extensions;
-using TimeSheet.Interfaces;
-using TimeSheet.Models;
+﻿using TimeSheet.Interfaces;
 
 namespace TimeSheet.Specifications;
 
 public class InvoiceTimesheetsSpec : ISpecification {
 
-    public TimePeriod TimeFilter { get; set; }
     public DateTime? StartDate { get; set; }
+    public DateTime? EndDate { get; set; }
     public HashSet<int> ProjectIds { get; set; } = [];
     public bool Ascending { get; set; } = false;
 
@@ -27,18 +24,16 @@ public class InvoiceTimesheetsSpec : ISpecification {
             .LeftJoin("Statuses s", "t.StatusId", "s.Id")
             .OrderBy("t.Date", Ascending);
 
-        if (TimeFilter != TimePeriod.All) {
-            try {
-                var dates = StartDate?.GetDatePeriods(TimeFilter) ?? DateTime.UtcNow.GetDatePeriods(TimeFilter);
-                builder.WhereBetween("t.Date", dates.startTime, dates.endTime);
-            }
-            catch (Exception e) {
-                Debug.WriteLine(e);
-            }
+        if (StartDate.HasValue && EndDate.HasValue) {
+            builder.WhereBetween("t.Date", StartDate.Value, EndDate.Value);
         }
 
         if (ProjectIds.Count != 0) {
             builder.WhereIn("t.ProjectId", ProjectIds.Cast<object>());
+        }
+
+        if (Ascending) {
+            builder.OrderBy("t.Date", Ascending);
         }
 
         return builder.ToQuery();

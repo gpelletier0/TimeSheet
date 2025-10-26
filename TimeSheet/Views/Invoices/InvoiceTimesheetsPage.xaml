@@ -42,29 +42,37 @@
 
                     <Picker Grid.Column="1"
                             Margin="10,0,0,0"
-                            WidthRequest="100"
+                            WidthRequest="120"
                             ItemsSource="{Binding MonthFilter}"
-                            SelectedIndex="{Binding SelectedMonthFilter, 
-                                Converter={StaticResource EnumToIntConverter}, 
-                                ConverterParameter={x:Type models:Month}}"
+                            SelectedItem="{Binding SelectedMonthFilter}"
                             IsVisible="{Binding SelectedPeriodFilter, 
                                 Converter={StaticResource EnumToBoolConverter}, 
                                 ConverterParameter={x:Static models:TimePeriod.Month}}" />
 
                     <Picker Grid.Column="1"
-                            Margin="10,0,0,0" 
+                            Margin="10,0,0,0"
                             WidthRequest="100"
                             ItemsSource="{Binding YearFilter}"
-                            SelectedIndex="{Binding SelectedYearFilter}"
+                            SelectedItem="{Binding SelectedYearFilter}"
                             IsVisible="{Binding SelectedPeriodFilter, 
                                 Converter={StaticResource EnumToBoolConverter}, 
                                 ConverterParameter={x:Static models:TimePeriod.Year}}" />
                 </Grid>
 
-                <Button Grid.Column="2"
-                        Margin="0,0,10,0"
-                        Text="Select all"
-                        Command="{Binding SelectAllButtonCommand}" />
+                <Grid Grid.Column="2"
+                      ColumnDefinitions="Auto, Auto">
+
+                    <Button Grid.Column="0"
+                            Margin="0,0,10,0"
+                            Text="Select all"
+                            Command="{Binding SelectAllCommand}" />
+                    <Button Grid.Column="1"
+                            Margin="0,0,10,0"
+                            Text="Deselect all"
+                            Command="{Binding DeselectAllCommand}" />
+
+                </Grid>
+
             </Grid>
 
             <CollectionView Grid.Row="1"
