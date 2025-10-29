@@ -6,7 +6,7 @@ public class SelectMaxSpec : ISpecification {
     public required string ColumnName { get; init; }
     public required int Start { get; init; }
     public int? Length { get; init; }
-    public required SqlDataType DataType { get; init; }
+    public required SqliteDataType DataType { get; init; }
     public required int Increment { get; init; }
     public required string TableName { get; init; }
     public required string Pattern { get; init; }

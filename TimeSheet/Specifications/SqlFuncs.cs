@@ -5,7 +5,7 @@ public static class SqlFuncs {
         return $"{expression} + {value}";
     }
 
-    public static string Cast(string expression, SqlDataType dataType) {
+    public static string Cast(string expression, SqliteDataType dataType) {
         return $"CAST({expression} AS {dataType.ToString().ToUpper()})";
     }
 

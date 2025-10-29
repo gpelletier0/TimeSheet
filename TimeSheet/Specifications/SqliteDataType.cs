@@ -1,6 +1,6 @@
 ﻿namespace TimeSheet.Specifications;
 
-public enum SqlDataType {
+public enum SqliteDataType {
     Integer,
     Real,
     Text,
