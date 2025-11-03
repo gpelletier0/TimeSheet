@@ -9,7 +9,7 @@
                             x:Class="TimeSheet.Views.Invoices.InvoicesFilterPage"
                             x:DataType="invoices:InvoicesFilterViewModel">
 
-    <views:ValidatorContentPage.Resources>
+    <ContentPage.Resources>
         <Style x:Key="DefaultMauiDatePickerStyle" TargetType="ndtp:NullableDateTimePicker">
             <Setter Property="BackgroundColor" Value="Transparent" />
             <Setter Property="TextColor" Value="White" />
@@ -18,9 +18,9 @@
             <Setter Property="HideIcon" Value="True" />
             <Setter Property="Mode" Value="Date" />
         </Style>
-    </views:ValidatorContentPage.Resources>
+    </ContentPage.Resources>
 
-    <views:ValidatorContentPage.Content>
+    <ContentPage.Content>
 
         <Grid RowDefinitions="Auto, *, Auto"
               Padding="10">
@@ -90,6 +90,6 @@
 
         </Grid>
 
-    </views:ValidatorContentPage.Content>
+    </ContentPage.Content>
 
 </views:ValidatorContentPage>

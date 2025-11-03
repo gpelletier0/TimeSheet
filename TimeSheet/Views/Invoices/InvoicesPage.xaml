@@ -9,7 +9,7 @@
                              x:Class="TimeSheet.Views.Invoices.InvoicesPage"
                              x:DataType="vm:InvoicesViewModel">
 
-    <views:ObservableContentPage.Content>
+    <ContentPage.Content>
 
         <Grid RowDefinitions="Auto, *, Auto">
 
@@ -110,6 +110,6 @@
 
         </Grid>
 
-    </views:ObservableContentPage.Content>
+    </ContentPage.Content>
 
 </views:ObservableContentPage>

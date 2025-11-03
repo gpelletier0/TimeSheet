@@ -10,7 +10,7 @@
                             x:DataType="vm:ProjectsFilterViewModel"
                             Title="Projects Filter" >
     
-    <views:ValidatorContentPage.Content>
+    <ContentPage.Content>
 
         <Grid RowDefinitions="Auto, *, Auto"
               Padding="10">
@@ -62,6 +62,6 @@
 
         </Grid>
 
-    </views:ValidatorContentPage.Content>
+    </ContentPage.Content>
     
 </views:ValidatorContentPage>

@@ -22,7 +22,7 @@
         </ResourceDictionary>
     </ContentPage.Resources>
 
-    <views:ValidatorContentPage.Content>
+    <ContentPage.Content>
 
         <Grid RowDefinitions="Auto, *, Auto">
 
@@ -156,6 +156,6 @@
 
         </Grid>
 
-    </views:ValidatorContentPage.Content>
+    </ContentPage.Content>
 
 </views:ValidatorContentPage>
