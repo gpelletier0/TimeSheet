@@ -1,5 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
 using System.Text.Json;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -17,19 +18,27 @@ namespace TimeSheet.ViewModels.Invoices;
 public partial class InvoiceViewModel(
     IRepository<Invoice> invoiceRepo,
     IRepository<Client> clientRepo,
-    IRepository<Project> projectRepo) : ObservableValidatorViewModel {
+    IRepository<Project> projectRepo,
+    IRepository<Status> statusRepo) : ObservableValidatorViewModel {
 
     private const string InvoicePrefix = "INV";
 
     [ReadOnly(true), ObservableProperty] private string _number = string.Empty;
     [ObservableProperty] private ObservableCollection<IdNameDto> _clientDtos = [];
-    [ObservableProperty] private IdNameDto? _selectedClientDto;
+
+    [ObservableProperty, Required(ErrorMessage = "Client is required")]
+    private IdNameDto? _selectedClientDto;
+
+    [ObservableProperty] private ObservableCollection<IdNameDto> _statusDtos = [];
+
+    [ObservableProperty, Required(ErrorMessage = "Status is required")]
+    private IdNameDto? _selectedStatusDto;
+
     [ObservableProperty] private ObservableCollection<CheckName<IdNameDto>> _projectDtos = [];
     [ObservableProperty] private DateTime _issueDate;
     [ObservableProperty] private DateTime _dueDate;
     [ObservableProperty] private string? _comments;
 
-    private InvoiceDto? _invoiceDto;
     private HashSet<int> _checkedProjectIds = [];
 
     public override void ApplyQueryAttributes(IDictionary<string, object> query) {
@@ -44,10 +53,17 @@ public partial class InvoiceViewModel(
         CanDelete = !IsNew;
 
         await LoadClientsAsync();
+        await LoadStatusesAsync();
+        await PopulateInvoiceDataAsync();
+    }
 
-        _invoiceDto = await invoiceRepo.FindAsync<InvoiceDto>(Id);
+    protected override async Task SaveAsync() {
+        if (!await ValidateViewModelAsync()) {
+            return;
+        }
 
-        LoadInvoice();
+        await UpdateInvoiceAsync();
+        await Shell.Current.GoToAsync(nameof(InvoicesPage));
     }
 
     protected override async Task DeleteAsync() {
@@ -61,9 +77,14 @@ public partial class InvoiceViewModel(
 
     [RelayCommand]
     private async Task SelectTimesheetsAsync() {
+        await UpdateInvoiceAsync();
+
         var parameters = new ShellNavigationQueryParameters { { nameof(BaseDto.Id), Id } };
         await Shell.Current.GoToAsync(nameof(InvoiceTimesheetsPage), parameters);
     }
+
+    [RelayCommand]
+    private void Print() { }
 
     private async Task LoadClientsAsync() {
         var clientDtos = await clientRepo.ListAsync<IdNameDto>();
@@ -89,50 +110,46 @@ public partial class InvoiceViewModel(
         }
     }
 
-    private async void OnProjectCheckChanged(object? sender, PropertyChangedEventArgs e) {
-        try {
-            if (sender is not CheckName<IdNameDto> checkName) {
-                return;
-            }
+    private async Task LoadStatusesAsync() {
+        var statuses = await statusRepo.ListAsync<IdNameDto>();
+        var statusDtos = statuses
+            .Where(d => !d.Name.Equals("Opened", StringComparison.OrdinalIgnoreCase));
 
-            if (checkName.IsChecked) {
-                _checkedProjectIds.Add(checkName.Value.Id);
-            }
-            else {
-                _checkedProjectIds.Remove(checkName.Value.Id);
-            }
-
-            await UpdateProjectSelectionAsync();
-        }
-        catch (Exception ex) {
-            Debug.WriteLine(ex);
-        }
+        StatusDtos = new ObservableCollection<IdNameDto>(statusDtos);
     }
 
-    private void LoadInvoice() {
-        InitializeNewInvoice();
-        PopulateInvoiceData();
-    }
-
-    private void InitializeNewInvoice() {
-        Number = GenerateInvoiceNumber();
-        IssueDate = DateTime.UtcNow;
-        DueDate = DateTime.UtcNow.AddMonths(1);
-    }
-
-    private void PopulateInvoiceData() {
-        if (_invoiceDto is null) {
+    private void OnProjectCheckChanged(object? sender, PropertyChangedEventArgs e) {
+        if (sender is not CheckName<IdNameDto> checkName) {
             return;
         }
 
-        _checkedProjectIds = _invoiceDto.ProjectIdArray.JsonDeserialize<HashSet<int>>() ?? [];
+        if (checkName.IsChecked) {
+            _checkedProjectIds.Add(checkName.Value.Id);
+        }
+        else {
+            _checkedProjectIds.Remove(checkName.Value.Id);
+        }
+    }
 
-        Number = _invoiceDto.Number;
-        IssueDate = _invoiceDto.IssueDate;
-        DueDate = _invoiceDto.DueDate;
-        Comments = _invoiceDto.Comments;
+    private async Task PopulateInvoiceDataAsync() {
+        var invoiceDto = await invoiceRepo.FindAsync<InvoiceDto>(Id);
+        if (invoiceDto is null) {
+            Number = GenerateInvoiceNumber();
+            IssueDate = DateTime.UtcNow;
+            DueDate = DateTime.UtcNow.AddMonths(1);
+            SelectedStatusDto = StatusDtos.First();
 
-        SelectedClientDto = ClientDtos.SingleOrDefault(c => c.Id == _invoiceDto.ClientId);
+            return;
+        }
+
+        Number = invoiceDto.Number;
+        IssueDate = invoiceDto.IssueDate;
+        DueDate = invoiceDto.DueDate;
+        Comments = invoiceDto.Comments;
+
+        SelectedClientDto = ClientDtos.SingleOrDefault(d => d.Id == invoiceDto.ClientId);
+        SelectedStatusDto = StatusDtos.SingleOrDefault(d => d.Id == invoiceDto.StatusId) ?? StatusDtos.First();
+        _checkedProjectIds = invoiceDto.ProjectIdArray.JsonDeserialize<HashSet<int>>() ?? [];
     }
 
     private string GenerateInvoiceNumber() {
@@ -156,11 +173,19 @@ public partial class InvoiceViewModel(
         return invoiceRepo.Get<int>(spec);
     }
 
-    private async Task UpdateProjectSelectionAsync() {
-        if (_invoiceDto is not null) {
-            _invoiceDto.ProjectIdArray = JsonSerializer.Serialize(_checkedProjectIds);
-            await invoiceRepo.UpdateAsync(_invoiceDto);
-        }
+    private async Task UpdateInvoiceAsync() {
+        var invoiceDto = new InvoiceDto {
+            Id = Id,
+            Number = Number,
+            ClientId = SelectedClientDto!.Id,
+            ProjectIdArray = JsonSerializer.Serialize(_checkedProjectIds),
+            IssueDate = IssueDate,
+            DueDate = DueDate,
+            Comments = Comments,
+            StatusId = SelectedStatusDto!.Id
+        };
+
+        await invoiceRepo.UpdateAsync(invoiceDto);
     }
 
     async partial void OnSelectedClientDtoChanged(IdNameDto? value) {

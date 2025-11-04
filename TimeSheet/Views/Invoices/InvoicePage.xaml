@@ -71,6 +71,11 @@
                             Placeholder="Comments"
                             Text="{Binding Comments}" />
 
+                    <Picker Title="Status"
+                            ItemsSource="{Binding StatusDtos}"
+                            ItemDisplayBinding="{Binding Name}"
+                            SelectedItem="{Binding SelectedStatusDto}" />
+                    
                 </VerticalStackLayout>
             </ScrollView>
 
@@ -78,6 +83,12 @@
                   Margin="0,10,0,0"
                   VerticalOptions="Center">
 
+                <Button WidthRequest="80"
+                        HorizontalOptions="Start"
+                        BackgroundColor="LightSkyBlue"
+                        Text="Print"
+                        Command="{Binding PrintCommand}" />
+                
                 <HorizontalStackLayout HorizontalOptions="Center"
                                        Spacing="10">
 
