@@ -19,7 +19,8 @@ public partial class InvoiceViewModel(
     IRepository<Invoice> invoiceRepo,
     IRepository<Client> clientRepo,
     IRepository<Project> projectRepo,
-    IRepository<Status> statusRepo) : ObservableValidatorViewModel {
+    IRepository<Status> statusRepo,
+    IInvoiceService invoiceService) : ObservableValidatorViewModel {
 
     private const string InvoicePrefix = "INV";
 
@@ -40,6 +41,9 @@ public partial class InvoiceViewModel(
     [ObservableProperty] private string? _comments;
 
     private HashSet<int> _checkedProjectIds = [];
+    private string? _timesheetIdArray;
+
+    private bool CanSelectTimesheets => _checkedProjectIds.Count > 0;
 
     public override void ApplyQueryAttributes(IDictionary<string, object> query) {
         if (query.TryGetValue(nameof(BaseDto.Id), out var obj)
@@ -72,10 +76,10 @@ public partial class InvoiceViewModel(
         }
 
         await invoiceRepo.DeleteAsync(Id);
-        await Shell.Current.GoToAsync("..");
+        await Shell.Current.GoToAsync(nameof(InvoicesPage));
     }
 
-    [RelayCommand]
+    [RelayCommand(CanExecute = nameof(CanSelectTimesheets))]
     private async Task SelectTimesheetsAsync() {
         await UpdateInvoiceAsync();
 
@@ -84,7 +88,9 @@ public partial class InvoiceViewModel(
     }
 
     [RelayCommand]
-    private void Print() { }
+    private void Print() {
+        invoiceService.Generate(Id);
+    }
 
     private async Task LoadClientsAsync() {
         var clientDtos = await clientRepo.ListAsync<IdNameDto>();
@@ -92,6 +98,8 @@ public partial class InvoiceViewModel(
     }
 
     private async Task LoadProjectsAsync(int clientId) {
+        UnregisterPropertyChangeHandlers(ProjectDtos);
+
         var projects = await projectRepo.ListAsync<IdNameDto>(new ProjectsSpec { ClientId = clientId });
         var projectCheckList = projects
             .Select(d => new CheckName<IdNameDto> {
@@ -102,6 +110,16 @@ public partial class InvoiceViewModel(
 
         ProjectDtos = new ObservableCollection<CheckName<IdNameDto>>(projectCheckList);
         RegisterPropertyChangeHandlers(ProjectDtos);
+    }
+
+    private void UnregisterPropertyChangeHandlers(IEnumerable<CheckName<IdNameDto>>? checkNames) {
+        if (checkNames is null) {
+            return;
+        }
+
+        foreach (var checkName in checkNames) {
+            checkName.PropertyChanged -= OnProjectCheckChanged;
+        }
     }
 
     private void RegisterPropertyChangeHandlers(IEnumerable<CheckName<IdNameDto>> checkNames) {
@@ -129,6 +147,8 @@ public partial class InvoiceViewModel(
         else {
             _checkedProjectIds.Remove(checkName.Value.Id);
         }
+        
+        SelectTimesheetsCommand.NotifyCanExecuteChanged();
     }
 
     private async Task PopulateInvoiceDataAsync() {
@@ -149,7 +169,11 @@ public partial class InvoiceViewModel(
 
         SelectedClientDto = ClientDtos.SingleOrDefault(d => d.Id == invoiceDto.ClientId);
         SelectedStatusDto = StatusDtos.SingleOrDefault(d => d.Id == invoiceDto.StatusId) ?? StatusDtos.First();
+        
         _checkedProjectIds = invoiceDto.ProjectIdArray.JsonDeserialize<HashSet<int>>() ?? [];
+        _timesheetIdArray = invoiceDto.TimesheetIdArray;
+        
+        SelectTimesheetsCommand.NotifyCanExecuteChanged();
     }
 
     private string GenerateInvoiceNumber() {
@@ -181,6 +205,7 @@ public partial class InvoiceViewModel(
             ProjectIdArray = JsonSerializer.Serialize(_checkedProjectIds),
             IssueDate = IssueDate,
             DueDate = DueDate,
+            TimesheetIdArray = _timesheetIdArray,
             Comments = Comments,
             StatusId = SelectedStatusDto!.Id
         };
@@ -191,6 +216,7 @@ public partial class InvoiceViewModel(
     async partial void OnSelectedClientDtoChanged(IdNameDto? value) {
         try {
             if (value is null) {
+                UnregisterPropertyChangeHandlers(ProjectDtos);
                 ProjectDtos.Clear();
                 return;
             }
