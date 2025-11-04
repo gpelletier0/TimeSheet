@@ -102,7 +102,6 @@ public class TextPdfInvoice(
         forCell.Add(new Paragraph(clientDto.ContactPhone).SetFont(_regularFont).SetMarginBottom(2));
         forCell.Add(new Paragraph(clientDto.ContactEmail).SetFont(_regularFont));
 
-
         addressTable.AddCell(fromCell);
         addressTable.AddCell(spacerCell);
         addressTable.AddCell(forCell);
@@ -162,8 +161,8 @@ public class TextPdfInvoice(
 
                 _grandTotal += total;
 
-                table.AddCell(CreateDataCell(i.ToString()));
-                table.AddCell(CreateDataCell(""));
+                table.AddCell(CreateDataCell((i + 1).ToString()));
+                table.AddCell(CreateDataCell(string.Empty));
                 table.AddCell(CreateDataCell($"{projectTimesheetDtos[i].Date:d}", TextAlignment.RIGHT));
                 table.AddCell(CreateDataCell($"{projectDto.HourlyWage:C}", TextAlignment.RIGHT));
                 table.AddCell(CreateDataCell($"{workTime.TotalHours:F2}", TextAlignment.RIGHT));
