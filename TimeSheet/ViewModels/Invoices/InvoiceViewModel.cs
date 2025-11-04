@@ -50,6 +50,15 @@ public partial class InvoiceViewModel(
         LoadInvoice();
     }
 
+    protected override async Task DeleteAsync() {
+        if (!await Shell.Current.DisplayAlert("Delete Invoice", "Are you sure you want to delete this invoice?", "Yes", "No")) {
+            return;
+        }
+
+        await invoiceRepo.DeleteAsync(Id);
+        await Shell.Current.GoToAsync("..");
+    }
+
     [RelayCommand]
     private async Task SelectTimesheetsAsync() {
         var parameters = new ShellNavigationQueryParameters { { nameof(BaseDto.Id), Id } };
