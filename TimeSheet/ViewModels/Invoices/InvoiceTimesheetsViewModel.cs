@@ -92,7 +92,7 @@ public partial class InvoiceTimesheetsViewModel : ObservableValidatorViewModel {
 
         Title = $"{_invoiceDto.Number} Timesheets";
         _spec.ProjectIds = _invoiceDto.ProjectIdArray.JsonDeserialize<HashSet<int>>() ?? [];
-        _checkedTimesheetIds = _invoiceDto.TimesheetIdArray.JsonDeserialize<HashSet<int>>() ?? [];
+        _checkedTimesheetIds = _invoiceDto.TimesheetIdArray?.JsonDeserialize<HashSet<int>>() ?? [];
 
         await LoadInvoiceTimesheetDtosAsync();
 
