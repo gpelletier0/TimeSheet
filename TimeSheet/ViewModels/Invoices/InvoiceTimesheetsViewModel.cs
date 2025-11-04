@@ -1,6 +1,6 @@
 ﻿using System.Collections.ObjectModel;
-using System.Text.Json;
 using System.Diagnostics;
+using System.Text.Json;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using TimeSheet.Extensions;
@@ -9,36 +9,26 @@ using TimeSheet.Models;
 using TimeSheet.Models.Dtos;
 using TimeSheet.Models.Entities;
 using TimeSheet.Specifications;
+using TimeSheet.Views.Invoices;
 
 namespace TimeSheet.ViewModels.Invoices;
 
 public partial class InvoiceTimesheetsViewModel : ObservableValidatorViewModel {
 
-    [ObservableProperty]
-    private TimePeriod[] _timePeriodFilter = Enum.GetValues<TimePeriod>();
-
-    [ObservableProperty]
-    private TimePeriod _selectedPeriodFilter = TimePeriod.Month;
-
-    [ObservableProperty]
-    private Month[] _monthFilter = Enum.GetValues<Month>();
-
-    [ObservableProperty]
-    private Month _selectedMonthFilter = (Month)DateTime.UtcNow.Month;
-
-    [ObservableProperty]
-    private string[] _yearFilter = [];
-
-    [ObservableProperty]
-    private string _selectedYearFilter = string.Empty;
-
-    [ObservableProperty]
-    private ObservableCollection<InvoiceTimesheetDto> _invoiceTimesheetDtos = [];
+    [ObservableProperty] private TimePeriod[] _timePeriodFilter = Enum.GetValues<TimePeriod>();
+    [ObservableProperty] private TimePeriod _selectedPeriodFilter = TimePeriod.Month;
+    [ObservableProperty] private Month[] _monthFilter = Enum.GetValues<Month>();
+    [ObservableProperty] private Month _selectedMonthFilter = (Month)DateTime.UtcNow.Month;
+    [ObservableProperty] private string[] _yearFilter = [];
+    [ObservableProperty] private string _selectedYearFilter = string.Empty;
+    [ObservableProperty] private ObservableCollection<InvoiceTimesheetDto> _invoiceTimesheetDtos = [];
 
     private readonly IRepository<Invoice> _invoiceRepo;
     private readonly IRepository<Timesheet> _timesheetRepo;
     private readonly InvoiceTimesheetsSpec _spec = new();
-    private HashSet<int> _timesheetIds = [];
+
+    private InvoiceDto? _invoiceDto;
+    private HashSet<int> _checkedTimesheetIds = [];
     private DateTime _currentDate;
     private bool _isInitialized;
 
@@ -50,8 +40,6 @@ public partial class InvoiceTimesheetsViewModel : ObservableValidatorViewModel {
         _currentDate = new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Month, 1);
 
         CanDelete = false;
-
-        LoadYearFilters();
     }
 
     public override void ApplyQueryAttributes(IDictionary<string, object> query) {
@@ -61,48 +49,54 @@ public partial class InvoiceTimesheetsViewModel : ObservableValidatorViewModel {
     }
 
     protected override async Task OnAppearingAsync() {
+        if (!_isInitialized) {
+            LoadYearFilters();
+        }
+
         await InitializeInvoiceDataAsync();
+    }
+
+    protected override async Task SaveAsync() {
+        if (!await ValidateViewModelAsync() || _invoiceDto is null) {
+            return;
+        }
+
+        _invoiceDto.TimesheetIdArray = JsonSerializer.Serialize(_checkedTimesheetIds);
+        await _invoiceRepo.UpdateAsync(_invoiceDto);
+
+        var parameters = new ShellNavigationQueryParameters { { nameof(BaseDto.Id), Id } };
+        await Shell.Current.GoToAsync(nameof(InvoicesPage), parameters);
     }
 
     [RelayCommand]
     private void SelectAll() {
-        foreach (var dto in InvoiceTimesheetDtos) {
-            dto.IsChecked = true;
-        }
+        UpdateAllTimesheetsSelection(true);
     }
 
     [RelayCommand]
     private void DeselectAll() {
+        UpdateAllTimesheetsSelection(false);
+    }
+
+    private void UpdateAllTimesheetsSelection(bool isChecked) {
         foreach (var dto in InvoiceTimesheetDtos) {
-            dto.IsChecked = false;
+            dto.IsChecked = isChecked;
         }
     }
 
     private async Task InitializeInvoiceDataAsync() {
-        var invoiceDto = await _invoiceRepo.FindAsync<InvoiceDto>(Id);
-        if (invoiceDto is null) {
-            Debug.WriteLine($"Invoice with ID {Id} not found");
+        _invoiceDto = await _invoiceRepo.FindAsync<InvoiceDto>(Id);
+        if (_invoiceDto is null) {
             return;
         }
 
-        Title = $"{invoiceDto.Number} Timesheets";
-
-        _spec.ProjectIds = DeserializeJsonArray(invoiceDto.ProjectIdArray);
-        _timesheetIds = DeserializeJsonArray(invoiceDto.TimesheetIdArray);
+        Title = $"{_invoiceDto.Number} Timesheets";
+        _spec.ProjectIds = _invoiceDto.ProjectIdArray.JsonDeserialize<HashSet<int>>() ?? [];
+        _checkedTimesheetIds = _invoiceDto.TimesheetIdArray.JsonDeserialize<HashSet<int>>() ?? [];
 
         await LoadInvoiceTimesheetDtosAsync();
 
         _isInitialized = true;
-    }
-
-    private static HashSet<int> DeserializeJsonArray(string jsonArray) {
-        try {
-            return JsonSerializer.Deserialize<HashSet<int>>(jsonArray) ?? [];
-        }
-        catch (JsonException e) {
-            Debug.WriteLine($"Error deserializing JSON: {e}");
-            return [];
-        }
     }
 
     private void LoadYearFilters() {
@@ -122,12 +116,39 @@ public partial class InvoiceTimesheetsViewModel : ObservableValidatorViewModel {
     }
 
     private async Task LoadInvoiceTimesheetDtosAsync() {
+        UnregisterPropertyChangeHandlers(InvoiceTimesheetDtos);
         SetSpecificationDates();
 
         var invoiceTimesheetDtos = await _timesheetRepo.ListAsync<InvoiceTimesheetDto>(_spec);
         InvoiceTimesheetDtos = new ObservableCollection<InvoiceTimesheetDto>(invoiceTimesheetDtos);
 
         ApplyTimesheetSelection();
+        RegisterPropertyChangeHandlers(InvoiceTimesheetDtos);
+    }
+
+    private void RegisterPropertyChangeHandlers(IEnumerable<InvoiceTimesheetDto> dtos) {
+        foreach (var dto in dtos) {
+            dto.PropertyChanged += OnTimesheetDtoPropertyChanged;
+        }
+    }
+
+    private void UnregisterPropertyChangeHandlers(IEnumerable<InvoiceTimesheetDto> dtos) {
+        foreach (var dto in dtos) {
+            dto.PropertyChanged -= OnTimesheetDtoPropertyChanged;
+        }
+    }
+
+    private void OnTimesheetDtoPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e) {
+        if (sender is not InvoiceTimesheetDto dto) {
+            return;
+        }
+
+        if (dto.IsChecked) {
+            _checkedTimesheetIds.Add(dto.Id);
+        }
+        else {
+            _checkedTimesheetIds.Remove(dto.Id);
+        }
     }
 
     private void SetSpecificationDates() {
@@ -138,7 +159,7 @@ public partial class InvoiceTimesheetsViewModel : ObservableValidatorViewModel {
 
     private void ApplyTimesheetSelection() {
         foreach (var dto in InvoiceTimesheetDtos) {
-            dto.IsChecked = _timesheetIds.Contains(dto.Id);
+            dto.IsChecked = _checkedTimesheetIds.Contains(dto.Id);
         }
     }
 
