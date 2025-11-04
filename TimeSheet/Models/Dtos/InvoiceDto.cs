@@ -8,4 +8,5 @@ public class InvoiceDto : BaseDto {
     public DateTime DueDate { get; set; }
     public string TimesheetIdArray { get; set; }
     public string? Comments { get; set; }
+    public int StatusId { get; set; }
 }
