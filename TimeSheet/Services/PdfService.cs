@@ -33,7 +33,7 @@ public class PdfService(
             return;
         }
 
-        var timesheetIds = invoiceDto.TimesheetIdArray.JsonDeserialize<HashSet<int>>();
+        var timesheetIds = invoiceDto.TimesheetIdArray?.JsonDeserialize<HashSet<int>>();
         if (timesheetIds is null) {
             return;
         }
