@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using Mapster;
 using TimeSheet.Interfaces;
 using TimeSheet.Models.Dtos;
@@ -45,12 +44,6 @@ public class Repository<TEntity>(IDatabaseService dbService) : IRepository<TEnti
             dto = entity.Adapt<TDto>();
         }
 
-        return dto;
-    }
-
-    public async Task<TDto?> FindAsync<TDto>(ISpecification spec) where TDto : BaseDto, new() {
-        var query = spec.GetQuery();
-        var dto = await dbService.DbAsync.FindWithQueryAsync<TDto>(query.Sql, query.Parameters);
         return dto;
     }
 
