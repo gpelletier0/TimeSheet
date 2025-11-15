@@ -1,8 +1,10 @@
 ﻿using System.Reflection;
 using CommunityToolkit.Maui;
+using Maui.NullableDateTimePicker;
 using Microsoft.Extensions.Logging;
 using TimeSheet.Extensions;
 using TimeSheet.Interfaces;
+using TimeSheet.Services;
 
 namespace TimeSheet;
 
@@ -15,6 +17,7 @@ public static class MauiProgram {
         builder
             .UseMauiApp<App>()
             .UseMauiCommunityToolkit()
+            .ConfigureNullableDateTimePicker()
             .ConfigureFonts(fonts => {
                 fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
                 fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
@@ -27,7 +30,8 @@ public static class MauiProgram {
         builder.Services.AddSingleton<App>();
         builder.Services.AddSingleton<AppShell>();
         builder.Services.AddConfigStrategies(typeof(IConfigStrategy).Assembly);
-
+        builder.Services.AddTransient<IInvoiceService, PdfService>();
+        
         builder.ConfigureContainer(new DefaultServiceProviderFactory(
             new ServiceProviderOptions {
                 ValidateOnBuild = true,

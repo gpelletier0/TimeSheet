@@ -2,8 +2,10 @@
 
 namespace TimeSheet.Models.Entities;
 
-public class TimesheetStatus : BaseEntity {
+[Table("Statuses")]
+public class Status : BaseEntity {
     [Unique]
+    [NotNull]
     [MaxLength(50)]
     public string Name { get; set; }
 

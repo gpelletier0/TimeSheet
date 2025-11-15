@@ -34,4 +34,16 @@ public abstract partial class ObservableValidatorViewModel : ObservableValidator
     protected virtual async Task CancelAsync() {
         await Shell.Current.GoToAsync("..");
     }
+    
+    protected async Task<bool> ValidateViewModelAsync() {
+        ValidateAllProperties();
+        if (!HasErrors) {
+            return true;
+        }
+
+        var errors = string.Join(Environment.NewLine, GetErrors());
+        await Shell.Current.DisplayAlert("Validation Error", errors, "OK");
+
+        return false;
+    }
 }

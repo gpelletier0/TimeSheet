@@ -82,18 +82,6 @@ public partial class ClientViewModel(IRepository<Client> clientRepo) : Observabl
         await Shell.Current.GoToAsync("..");
     }
 
-    private async Task<bool> ValidateViewModelAsync() {
-        ValidateAllProperties();
-        if (!HasErrors) {
-            return true;
-        }
-
-        var errors = string.Join(Environment.NewLine, GetErrors());
-        await Shell.Current.DisplayAlert("Validation Error", errors, "OK");
-
-        return false;
-    }
-
     private async Task GetClientAsync() {
         if (IsNew) {
             return;

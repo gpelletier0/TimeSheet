@@ -1,10 +1,16 @@
 using CommunityToolkit.Mvvm.Input;
+using TimeSheet.Interfaces;
 using TimeSheet.Views.Clients;
+using TimeSheet.Views.Invoices;
 using TimeSheet.Views.Projects;
 using TimeSheet.Views.Timesheets;
 
 namespace TimeSheet.ViewModels {
-    public partial class MainPageViewModel : ObservableViewModel {
+    public partial class MainPageViewModel(IDatabaseService dbService) : ObservableViewModel {
+
+        protected override async Task LoadAsync() {
+            await dbService.InitializeAsync();
+        }
 
         [RelayCommand]
         private async Task GoToClientsAsync() {
@@ -19,6 +25,11 @@ namespace TimeSheet.ViewModels {
         [RelayCommand]
         private async Task GoToTimesheetsAsync() {
             await Shell.Current.GoToAsync(nameof(TimesheetsPage));
+        }
+
+        [RelayCommand]
+        private async Task GoToInvoicesAsync() {
+            await Shell.Current.GoToAsync(nameof(InvoicesPage));
         }
     }
 }

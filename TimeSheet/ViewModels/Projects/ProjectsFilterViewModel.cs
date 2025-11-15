@@ -1,6 +1,7 @@
 ﻿using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using TimeSheet.Interfaces;
+using TimeSheet.Models.Dtos;
 using TimeSheet.Models.Entities;
 using TimeSheet.Specifications;
 using TimeSheet.Views.Projects;

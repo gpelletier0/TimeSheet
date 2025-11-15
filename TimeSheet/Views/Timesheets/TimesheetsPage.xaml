@@ -21,40 +21,42 @@
 
     <ContentPage.Content>
 
-        <Grid RowDefinitions="Auto, *, Auto"
-              Margin="10, 0">
+        <Grid RowDefinitions="Auto, *, Auto">
 
             <Grid Grid.Row="0"
-                  Margin="0,5,0,0"
+                  Margin="0,5"
                   ColumnDefinitions="Auto, *, Auto">
 
                 <Picker Grid.Column="0"
+                        Margin="10,0,0,0"
                         WidthRequest="100"
-                        ItemsSource="{Binding TimeFilters}"
-                        SelectedIndex="{Binding SelectedTimeFilter, Converter={StaticResource EnumToIntConverter}, ConverterParameter={x:Type models:TimePeriod}}" />
+                        ItemsSource="{Binding Filters}"
+                        SelectedIndex="{Binding SelectedFilter, Converter={StaticResource EnumToIntConverter}, ConverterParameter={x:Type models:TimePeriod}}" />
 
                 <Label Grid.Column="1"
                        Margin="10,0,0,0"
                        HorizontalTextAlignment="Start"
                        VerticalTextAlignment="Center"
                        Text="{Binding FilterNames}" />
-                
+
                 <Button Grid.Column="2"
+                        Margin="0,0,10,0"
                         ImageSource="search_icon.png"
                         Command="{Binding FilterCommand}" />
             </Grid>
 
             <CollectionView Grid.Row="1"
                             x:Name="EntryCollectionView"
-                            Margin="0,10,0,0"
+                            Margin="10,0,0,0"
                             ItemsSource="{Binding TimesheetDtos}"
                             SelectedItem="{Binding SelectedTimesheetsDto}"
                             SelectionMode="Single">
 
                 <CollectionView.ItemTemplate>
                     <DataTemplate x:DataType="dtos:TimesheetsDto">
-                        <Grid RowDefinitions="Auto,Auto,Auto"
-                              ColumnDefinitions="10,*">
+                        <Grid RowDefinitions="Auto, Auto, Auto"
+                              ColumnDefinitions="10, *"
+                              Padding="0,0,15,0">
 
                             <Grid.GestureRecognizers>
                                 <TapGestureRecognizer
@@ -88,7 +90,7 @@
 
                             <BoxView Grid.Row="1" Grid.Column="0"
                                      Grid.RowSpan="2"
-                                     BackgroundColor="{Binding StatusColorArgb}" />
+                                     BackgroundColor="{Binding ColorArgb}" />
 
                             <Label Grid.Row="1" Grid.Column="1"
                                    Margin="5,0,0,0"
@@ -108,8 +110,8 @@
                                    Text="{Binding ProjectHourlyWage, StringFormat='{}{0:C2}/h', TargetNullValue=0.00/h}" />
 
                             <Label Grid.Row="2" Grid.Column="1"
-                                   Margin="5,0,0,0"
                                    FontSize="Micro"
+                                   Margin="5,0,0,0"
                                    Text="{Binding ProjectName}" />
 
                             <Label Grid.Row="2" Grid.Column="1"

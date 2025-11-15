@@ -10,7 +10,8 @@
         <SingleProject>true</SingleProject>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
-
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        
         <!-- Display name -->
         <ApplicationTitle>TimeSheet</ApplicationTitle>
 
@@ -50,10 +51,13 @@
     <ItemGroup>
         <PackageReference Include="CommunityToolkit.Maui" Version="12.2.0"/>
         <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0"/>
+        <PackageReference Include="itext7" Version="9.3.0" />
+        <PackageReference Include="itext7.bouncy-castle-adapter" Version="9.3.0" />
         <PackageReference Include="Mapster" Version="7.4.0"/>
         <PackageReference Include="Mapster.DependencyInjection" Version="1.0.1"/>
         <PackageReference Include="Microsoft.Maui.Controls" Version="9.0.110"/>
         <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="9.0.9"/>
+        <PackageReference Include="Sebarslan.Maui.NullableDateTimePicker" Version="3.1.1" />
         <PackageReference Include="sqlite-net-pcl" Version="1.9.172"/>
     </ItemGroup>
 
@@ -84,6 +88,9 @@
         </MauiXaml>
         <MauiXaml Update="Views\Clients\ClientsFilterPage.xaml">
             <SubType>Designer</SubType>
+        </MauiXaml>
+        <MauiXaml Update="Views\Invoices\InvoicesPage.xaml">
+          <SubType>Designer</SubType>
         </MauiXaml>
     </ItemGroup>
 
@@ -123,6 +130,10 @@
         <Compile Update="Views\Clients\ClientsFilterPage.xaml.cs">
             <DependentUpon>ClientsFilterPage.xaml</DependentUpon>
             <SubType>Code</SubType>
+        </Compile>
+        <Compile Update="Views\Invoices\InvoicesPage.xaml.cs">
+          <DependentUpon>InvoicesPage.xaml</DependentUpon>
+          <SubType>Code</SubType>
         </Compile>
     </ItemGroup>
 

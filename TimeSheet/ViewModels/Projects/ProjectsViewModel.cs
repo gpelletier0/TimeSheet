@@ -28,13 +28,12 @@ namespace TimeSheet.ViewModels.Projects {
             }
         }
 
-        protected override async Task OnAppearingAsync() {
+        protected override Task OnAppearingAsync() {
             FilterNames = _projectsSpec.GetFilterNames();
-            await LoadProjectsCommand.ExecuteAsync(null);
+            return base.OnAppearingAsync();
         }
-
-        [RelayCommand]
-        private async Task LoadProjectsAsync() {
+        
+        protected override async Task LoadAsync() {
             var projects = await projectRepo.ListAsync<ProjectsDto>(_projectsSpec);
             ProjectDtos = new ObservableCollection<ProjectsDto>(projects);
         }

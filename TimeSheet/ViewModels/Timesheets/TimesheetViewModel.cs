@@ -12,7 +12,7 @@ namespace TimeSheet.ViewModels.Timesheets;
 public partial class TimesheetViewModel(
     IRepository<Timesheet> timesheetRepo,
     IRepository<Project> projectRepo,
-    IRepository<TimesheetStatus> statusRepo) : ObservableValidatorViewModel {
+    IRepository<Status> statusRepo) : ObservableValidatorViewModel {
 
     [ObservableProperty]
     [Required(ErrorMessage = "Date is required")]
@@ -114,17 +114,5 @@ public partial class TimesheetViewModel(
         Note = dto.Note;
         SelectedProjectDto = ProjectDtos.SingleOrDefault(p => p.Id == dto.ProjectId);
         SelectedStatusDto = StatusDtos.SingleOrDefault(t => t.Id == dto.StatusId);
-    }
-
-    private async Task<bool> ValidateViewModelAsync() {
-        ValidateAllProperties();
-        if (!HasErrors) {
-            return true;
-        }
-
-        var errors = string.Join(Environment.NewLine, GetErrors());
-        await Shell.Current.DisplayAlert("Validation Error", errors, "OK");
-
-        return false;
     }
 }

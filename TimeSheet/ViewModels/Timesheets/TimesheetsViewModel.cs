@@ -9,13 +9,13 @@ using TimeSheet.Specifications;
 using TimeSheet.Views.Timesheets;
 
 namespace TimeSheet.ViewModels.Timesheets {
-    public partial class TimesheetsViewModel(IRepository<Timesheet> timesheetRepo) : ObservableViewModel {
+    public partial class TimesheetsViewModel(IRepository<Timesheet> timesheetRepo, IRepository<Status> statusRepo) : ObservableViewModel {
 
         [ObservableProperty]
-        private ObservableCollection<string> _timeFilters = new(Enum.GetNames<TimePeriod>());
+        private ObservableCollection<string> _filters = new(Enum.GetNames<TimePeriod>());
 
         [ObservableProperty]
-        private TimePeriod _selectedTimeFilter;
+        private TimePeriod _selectedFilter;
 
         [ObservableProperty]
         private ObservableCollection<TimesheetsDto> _timesheetDtos = [];
@@ -26,7 +26,9 @@ namespace TimeSheet.ViewModels.Timesheets {
         [ObservableProperty]
         private string _filterNames = string.Empty;
 
-        private TimesheetsSpec _timesheetsSpec = new();
+        private TimesheetsSpec _timesheetsSpec = new() {
+            StatusIds = [statusRepo.FirstIdOrDefault("Opened")]
+        };
 
         public override void ApplyQueryAttributes(IDictionary<string, object> query) {
             if (query.TryGetValue(nameof(TimesheetsSpec), out var obj)
@@ -36,15 +38,13 @@ namespace TimeSheet.ViewModels.Timesheets {
         }
 
         protected override Task OnAppearingAsync() {
-            SelectedTimeFilter = _timesheetsSpec.TimeFilter;
+            SelectedFilter = TimePeriod.Month;
             FilterNames = _timesheetsSpec.GetFilterNames();
-            LoadTimesheetsCommand.ExecuteAsync(null);
             
             return Task.CompletedTask;
         }
 
-        [RelayCommand]
-        private async Task LoadTimesheetsAsync() {
+        protected override async Task LoadAsync() {
             var timesheets = await timesheetRepo.ListAsync<TimesheetsDto>(_timesheetsSpec);
             TimesheetDtos = new ObservableCollection<TimesheetsDto>(timesheets);
         }
@@ -66,9 +66,10 @@ namespace TimeSheet.ViewModels.Timesheets {
             var parameters = new ShellNavigationQueryParameters { { nameof(BaseDto.Id), SelectedTimesheetsDto.Id } };
             await Shell.Current.GoToAsync(nameof(TimesheetPage), parameters);
         }
-        
-        partial void OnSelectedTimeFilterChanged(TimePeriod value) {
+
+        partial void OnSelectedFilterChanged(TimePeriod value) {
             _timesheetsSpec.TimeFilter = value;
+            LoadCommand.ExecuteAsync(null);
         }
     }
 }

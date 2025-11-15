@@ -1,0 +1,171 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+
+<views:ValidatorContentPage x:TypeArguments="vm:InvoiceTimesheetsViewModel"
+                            xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                            xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                            xmlns:views="clr-namespace:TimeSheet.Views"
+                            xmlns:vm="clr-namespace:TimeSheet.ViewModels.Invoices"
+                            xmlns:dtos="using:TimeSheet.Models.Dtos"
+                            xmlns:converters="using:TimeSheet.Converters"
+                            xmlns:models="using:TimeSheet.Models"
+                            xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+                            x:Class="TimeSheet.Views.Invoices.InvoiceTimesheetsPage"
+                            x:DataType="vm:InvoiceTimesheetsViewModel"
+                            Title="{Binding Title}">
+
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <converters:TimeSpanSubtractionConverter x:Key="TimeSpanSubtractionConverter" />
+            <converters:TimeBillingConverter x:Key="TimeBillingConverter" />
+            <toolkit:EnumToIntConverter x:Key="EnumToIntConverter" />
+            <toolkit:EnumToBoolConverter x:Key="EnumToBoolConverter" />
+        </ResourceDictionary>
+    </ContentPage.Resources>
+
+    <ContentPage.Content>
+
+        <Grid RowDefinitions="Auto, *, Auto"
+              Padding="10">
+
+            <Grid Grid.Row="0"
+                  Margin="0,5"
+                  ColumnDefinitions="Auto, *, Auto">
+
+                <Grid Grid.Column="0"
+                      ColumnDefinitions="Auto, Auto">
+                    <Picker Grid.Column="0"
+                            Margin="10,0,0,0"
+                            WidthRequest="100"
+                            ItemsSource="{Binding TimePeriodFilter}"
+                            SelectedIndex="{Binding SelectedPeriodFilter, 
+                                Converter={StaticResource EnumToIntConverter}, 
+                                ConverterParameter={x:Type models:TimePeriod}}" />
+
+                    <Picker Grid.Column="1"
+                            Margin="10,0,0,0"
+                            WidthRequest="120"
+                            ItemsSource="{Binding MonthFilter}"
+                            SelectedItem="{Binding SelectedMonthFilter}"
+                            IsVisible="{Binding SelectedPeriodFilter, 
+                                Converter={StaticResource EnumToBoolConverter}, 
+                                ConverterParameter={x:Static models:TimePeriod.Month}}" />
+
+                    <Picker Grid.Column="1"
+                            Margin="10,0,0,0"
+                            WidthRequest="100"
+                            ItemsSource="{Binding YearFilter}"
+                            SelectedItem="{Binding SelectedYearFilter}"
+                            IsVisible="{Binding SelectedPeriodFilter, 
+                                Converter={StaticResource EnumToBoolConverter}, 
+                                ConverterParameter={x:Static models:TimePeriod.Year}}" />
+                </Grid>
+
+                <Grid Grid.Column="2"
+                      ColumnDefinitions="Auto, Auto">
+
+                    <Button Grid.Column="0"
+                            Margin="0,0,10,0"
+                            Text="Select all"
+                            Command="{Binding SelectAllCommand}" />
+                    <Button Grid.Column="1"
+                            Margin="0,0,10,0"
+                            Text="Deselect all"
+                            Command="{Binding DeselectAllCommand}" />
+
+                </Grid>
+
+            </Grid>
+
+            <CollectionView Grid.Row="1"
+                            Margin="10,5,0,0"
+                            ItemsSource="{Binding InvoiceTimesheetDtos}">
+
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="dtos:InvoiceTimesheetDto">
+                        <Grid RowDefinitions="Auto, Auto"
+                              ColumnDefinitions="35, 10, *"
+                              Padding="0,0,15,5">
+
+                            <CheckBox Grid.Row="0" Grid.Column="0"
+                                      Grid.RowSpan="2"
+                                      VerticalOptions="Start"
+                                      HorizontalOptions="Start"
+                                      IsChecked="{Binding IsChecked}" />
+
+                            <Rectangle Grid.Row="0" Grid.Column="1"
+                                       Grid.ColumnSpan="2"
+                                       BackgroundColor="LightSlateGray" />
+
+                            <Label Grid.Row="0" Grid.Column="1"
+                                   Grid.ColumnSpan="2"
+                                   Margin="5,0,0,0"
+                                   Text="{Binding Date, StringFormat='{}{0:MMMM d yyyy}'}"
+                                   FontSize="Micro" />
+
+                            <Label Grid.Row="0" Grid.Column="1"
+                                   Grid.ColumnSpan="2"
+                                   Margin="0,0,5,0"
+                                   HorizontalTextAlignment="End">
+                                <Label.Text>
+                                    <MultiBinding Converter="{StaticResource TimeSpanSubtractionConverter}"
+                                                  StringFormat="{}{0:hh}h{0:mm}m">
+                                        <Binding Path="EndTime" />
+                                        <Binding Path="StartTime" />
+                                    </MultiBinding>
+                                </Label.Text>
+                            </Label>
+
+                            <BoxView Grid.Row="1" Grid.Column="1"
+                                     Grid.RowSpan="2"
+                                     BackgroundColor="{Binding ColorArgb}" />
+
+                            <Label Grid.Row="1" Grid.Column="2"
+                                   FontSize="Micro"
+                                   Margin="5,0,0,0"
+                                   Text="{Binding ProjectName}" />
+
+                            <Label Grid.Row="1" Grid.Column="2"
+                                   Margin="0,0,5,0"
+                                   HorizontalTextAlignment="End"
+                                   FontSize="Micro">
+                                <Label.Text>
+                                    <MultiBinding Converter="{StaticResource TimeBillingConverter}"
+                                                  StringFormat="Total: {0:C2}">
+                                        <Binding Path="EndTime" />
+                                        <Binding Path="StartTime" />
+                                        <Binding Path="ProjectHourlyWage" />
+                                    </MultiBinding>
+                                </Label.Text>
+                            </Label>
+
+                        </Grid>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+
+            <Grid Grid.Row="2"
+                  Margin="0,10,0,0"
+                  VerticalOptions="Center">
+
+                <HorizontalStackLayout HorizontalOptions="Center"
+                                       Spacing="10">
+
+                    <Button WidthRequest="80"
+                            BackgroundColor="DarkSeaGreen"
+                            Text="Save"
+                            Command="{Binding SaveCommand}" />
+
+                </HorizontalStackLayout>
+
+                <Button WidthRequest="80"
+                        HorizontalOptions="End"
+                        BackgroundColor="SlateGray"
+                        Text="Cancel"
+                        Command="{Binding CancelCommand}" />
+            </Grid>
+            
+        </Grid>
+
+    </ContentPage.Content>
+
+</views:ValidatorContentPage>

@@ -1,0 +1,115 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+
+<views:ObservableContentPage x:TypeArguments="vm:InvoicesViewModel"
+                             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                             xmlns:views="clr-namespace:TimeSheet.Views"
+                             xmlns:vm="clr-namespace:TimeSheet.ViewModels.Invoices"
+                             xmlns:dtos="clr-namespace:TimeSheet.Models.Dtos"
+                             x:Class="TimeSheet.Views.Invoices.InvoicesPage"
+                             x:DataType="vm:InvoicesViewModel">
+
+    <ContentPage.Content>
+
+        <Grid RowDefinitions="Auto, *, Auto">
+
+            <Grid Grid.Row="0"
+                  Margin="0,5"
+                  ColumnDefinitions="Auto, *, Auto">
+
+                <Picker Grid.Column="0"
+                        Margin="10,0,0,0"
+                        WidthRequest="200"
+                        ItemsSource="{Binding Filters}"
+                        SelectedItem="{Binding SelectedFilter}" />
+                
+                <Label Grid.Column="1"
+                       Margin="10,0,0,0"
+                       HorizontalTextAlignment="Start"
+                       VerticalTextAlignment="Center"
+                       Text="{Binding FilterNames}" />
+
+                <Button Grid.Column="2"
+                        Margin="0,0,10,0"
+                        ImageSource="search_icon.png"
+                        Command="{Binding FilterCommand}" />
+            </Grid>
+
+            <CollectionView Grid.Row="1"
+                            x:Name="EntryCollectionView"
+                            Margin="10,0,0,0"
+                            ItemsSource="{Binding InvoiceDtos}"
+                            SelectedItem="{Binding SelectedInvoiceDto}"
+                            SelectionMode="Single">
+
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="dtos:InvoicesDto">
+                        <Grid RowDefinitions="Auto, Auto, Auto"
+                              ColumnDefinitions="10, *"
+                              Padding="0,0,15,0">
+
+                            <Grid.GestureRecognizers>
+                                <TapGestureRecognizer
+                                    Command="{Binding Path=BindingContext.ItemTappedCommand,
+                                        Source={x:Reference EntryCollectionView}}"
+                                    CommandParameter="{Binding .}" />
+                            </Grid.GestureRecognizers>
+
+                            <Rectangle Grid.Row="0" Grid.Column="0"
+                                       Grid.ColumnSpan="2"
+                                       BackgroundColor="LightSlateGray" />
+
+                            <Label Grid.Row="0" Grid.Column="0"
+                                   Grid.ColumnSpan="2"
+                                   Margin="5,0,0,0"
+                                   Text="{Binding IssueDate, StringFormat='{}{0:MMMM d yyyy}'}"
+                                   FontSize="Micro" />
+
+                            <BoxView Grid.Row="1" Grid.Column="0"
+                                     Grid.RowSpan="2"
+                                     BackgroundColor="{Binding ColorArgb}" />
+
+                            <Label Grid.Row="1" Grid.Column="1"
+                                   Margin="5,0,0,0"
+                                   FontSize="Small"
+                                   Text="{Binding Number}" />
+
+                            <Label Grid.Row="1" Grid.Column="1"
+                                   Margin="0,0,5,0"
+                                   HorizontalTextAlignment="End"
+                                   FontSize="Micro"
+                                   Text="{Binding ClientName}" />
+
+                            <Label Grid.Row="2" Grid.Column="1"
+                                   Margin="5,0,0,0"
+                                   FontSize="Micro"
+                                   Text="{Binding IssueDate, StringFormat='Issue date: {0:dd-MM-yyyy}'}" />
+
+                            <Label Grid.Row="2" Grid.Column="1"
+                                   Margin="0,0,5,0"
+                                   HorizontalTextAlignment="End"
+                                   FontSize="Micro"
+                                   Text="{Binding DueDate, StringFormat='Due date: {0:dd-MM-yyyy}'}" />
+
+                        </Grid>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+
+            <HorizontalStackLayout Grid.Row="2"
+                                   Margin="0, 10"
+                                   VerticalOptions="Center"
+                                   HorizontalOptions="Center">
+
+                <Button WidthRequest="80"
+                        BackgroundColor="DarkSeaGreen"
+                        Text="Add"
+                        Command="{Binding AddCommand}" />
+
+            </HorizontalStackLayout>
+
+        </Grid>
+
+    </ContentPage.Content>
+
+</views:ObservableContentPage>

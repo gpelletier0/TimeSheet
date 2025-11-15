@@ -1,6 +1,4 @@
-﻿using TimeSheet.Models.Dtos;
-
-namespace TimeSheet.Interfaces;
+﻿namespace TimeSheet.Models.Dtos;
 
 public class IdNameDto : BaseDto {
     public string Name { get; init; }

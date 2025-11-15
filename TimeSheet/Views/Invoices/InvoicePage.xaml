@@ -1,0 +1,117 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+
+<views:ValidatorContentPage x:TypeArguments="vm:InvoiceViewModel"
+                            xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                            xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                            xmlns:views="using:TimeSheet.Views"
+                            xmlns:vm="using:TimeSheet.ViewModels.Invoices"
+                            xmlns:interfaces="using:TimeSheet.Interfaces"
+                            x:Class="TimeSheet.Views.Invoices.InvoicePage"
+                            x:DataType="vm:InvoiceViewModel"
+                            Title="{Binding Title}">
+
+    <ContentPage.Content>
+
+        <Grid RowDefinitions="Auto, *, Auto"
+              Padding="10">
+
+            <ScrollView Grid.Row="1">
+                <VerticalStackLayout Spacing="10">
+
+                    <Label Text="Invoice" />
+                    <Entry Text="{Binding Number}"
+                           IsEnabled="False" />
+
+                    <Picker Title="Client"
+                            ItemsSource="{Binding ClientDtos}"
+                            ItemDisplayBinding="{Binding Name}"
+                            SelectedItem="{Binding SelectedClientDto}" />
+
+                    <Label Text="Projects" />
+                    <Border Stroke="Gray"
+                            StrokeThickness="1"
+                            Margin="0,0,10,0">
+                        <CollectionView MinimumHeightRequest="60"
+                                        MaximumHeightRequest="60"
+                                        ItemsSource="{Binding ProjectDtos}">
+                            <CollectionView.ItemTemplate>
+                                <DataTemplate x:DataType="interfaces:ICheckName">
+                                    <StackLayout Padding="5">
+                                        <Grid ColumnDefinitions="35,*"
+                                              HeightRequest="20">
+                                            <CheckBox Grid.Column="0"
+                                                      IsChecked="{Binding IsChecked}" />
+                                            <Label Grid.Column="1"
+                                                   VerticalOptions="Center"
+                                                   Text="{Binding Name}" />
+                                        </Grid>
+                                    </StackLayout>
+                                </DataTemplate>
+                            </CollectionView.ItemTemplate>
+                        </CollectionView>
+                    </Border>
+
+                    <Label Text="Issue date" />
+                    <DatePicker WidthRequest="120"
+                                HorizontalOptions="Start"
+                                Format="dd-MM-yyyy"
+                                Date="{Binding IssueDate}" />
+
+                    <Label Text="Due date" />
+                    <DatePicker WidthRequest="120"
+                                HorizontalOptions="Start"
+                                Format="dd-MM-yyyy"
+                                Date="{Binding DueDate}" />
+
+                    <Button Text="Timesheets"
+                            Command="{Binding SelectTimesheetsCommand}" />
+
+                    <Editor HeightRequest="80"
+                            MaxLength="500"
+                            Placeholder="Comments"
+                            Text="{Binding Comments}" />
+
+                    <Picker Title="Status"
+                            ItemsSource="{Binding StatusDtos}"
+                            ItemDisplayBinding="{Binding Name}"
+                            SelectedItem="{Binding SelectedStatusDto}" />
+                    
+                </VerticalStackLayout>
+            </ScrollView>
+
+            <Grid Grid.Row="2"
+                  Margin="0,10,0,0"
+                  VerticalOptions="Center">
+
+                <Button WidthRequest="80"
+                        HorizontalOptions="Start"
+                        BackgroundColor="LightSkyBlue"
+                        Text="Print"
+                        Command="{Binding PrintCommand}" />
+                
+                <HorizontalStackLayout HorizontalOptions="Center"
+                                       Spacing="10">
+
+                    <Button WidthRequest="80"
+                            BackgroundColor="DarkSeaGreen"
+                            Text="Save"
+                            Command="{Binding SaveCommand}" />
+
+                    <Button WidthRequest="80"
+                            Text="Delete"
+                            BackgroundColor="IndianRed"
+                            Command="{Binding DeleteCommand}" />
+                </HorizontalStackLayout>
+
+                <Button WidthRequest="80"
+                        HorizontalOptions="End"
+                        BackgroundColor="SlateGray"
+                        Text="Cancel"
+                        Command="{Binding CancelCommand}" />
+            </Grid>
+
+        </Grid>
+
+    </ContentPage.Content>
+
+</views:ValidatorContentPage>

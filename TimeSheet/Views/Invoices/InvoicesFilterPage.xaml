@@ -1,0 +1,95 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+
+<views:ValidatorContentPage x:TypeArguments="invoices:InvoicesFilterViewModel" xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                            xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                            xmlns:views="clr-namespace:TimeSheet.Views"
+                            xmlns:invoices="clr-namespace:TimeSheet.ViewModels.Invoices"
+                            xmlns:interfaces="clr-namespace:TimeSheet.Interfaces"
+                            xmlns:ndtp="clr-namespace:Maui.NullableDateTimePicker;assembly=Maui.NullableDateTimePicker"
+                            x:Class="TimeSheet.Views.Invoices.InvoicesFilterPage"
+                            x:DataType="invoices:InvoicesFilterViewModel">
+
+    <ContentPage.Resources>
+        <Style x:Key="DefaultMauiDatePickerStyle" TargetType="ndtp:NullableDateTimePicker">
+            <Setter Property="BackgroundColor" Value="Transparent" />
+            <Setter Property="TextColor" Value="White" />
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="Placeholder" Value="Select a date..." />
+            <Setter Property="HideIcon" Value="True" />
+            <Setter Property="Mode" Value="Date" />
+        </Style>
+    </ContentPage.Resources>
+
+    <ContentPage.Content>
+
+        <Grid RowDefinitions="Auto, *, Auto"
+              Padding="10">
+
+            <StackLayout Grid.Row="0"
+                         Spacing="10">
+
+                <Label Text="Number" />
+                <Entry Text="{Binding Number}" />
+
+                <Label Text="Issue date" />
+                <ndtp:NullableDateTimePicker Style="{StaticResource DefaultMauiDatePickerStyle}"
+                                             SelectedDateTime="{Binding IssueDate}" 
+                                             Format="yyyy-MM-dd"/>
+
+                <Label Text="Due date" />
+                <ndtp:NullableDateTimePicker Style="{StaticResource DefaultMauiDatePickerStyle}"
+                                             SelectedDateTime="{Binding DueDate}"
+                                             Format="yyyy-MM-dd"/>
+
+                <Label Text="Status" />
+                <CollectionView ItemsSource="{Binding StatusCheckNames}">
+                    <CollectionView.ItemsLayout>
+                        <LinearItemsLayout Orientation="Horizontal" />
+                    </CollectionView.ItemsLayout>
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate x:DataType="interfaces:ICheckName">
+                            <Grid ColumnDefinitions="35,60"
+                                  VerticalOptions="Center">
+
+                                <CheckBox Grid.Column="0"
+                                          IsChecked="{Binding IsChecked}"
+                                          VerticalOptions="Center" />
+                                <Label Grid.Column="1"
+                                       Text="{Binding Name}"
+                                       VerticalOptions="Center" />
+                            </Grid>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+
+            </StackLayout>
+
+            <Grid Grid.Row="2"
+                  VerticalOptions="Center">
+
+                <HorizontalStackLayout HorizontalOptions="Center"
+                                       Spacing="10">
+
+                    <Button WidthRequest="80"
+                            BackgroundColor="DarkSeaGreen"
+                            Text="Update"
+                            Command="{Binding SaveCommand}" />
+
+                    <Button WidthRequest="80"
+                            Text="Clear"
+                            BackgroundColor="IndianRed"
+                            Command="{Binding DeleteCommand}" />
+                </HorizontalStackLayout>
+
+                <Button WidthRequest="80"
+                        HorizontalOptions="End"
+                        BackgroundColor="SlateGray"
+                        Text="Cancel"
+                        Command="{Binding CancelCommand}" />
+            </Grid>
+
+        </Grid>
+
+    </ContentPage.Content>
+
+</views:ValidatorContentPage>

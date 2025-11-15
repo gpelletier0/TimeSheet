@@ -2,6 +2,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using TimeSheet.Interfaces;
 using TimeSheet.Models;
+using TimeSheet.Models.Dtos;
 using TimeSheet.Models.Entities;
 using TimeSheet.Specifications;
 using TimeSheet.Views.Timesheets;
@@ -11,7 +12,7 @@ namespace TimeSheet.ViewModels.Timesheets;
 public partial class TimesheetsFilterViewModel(
     IRepository<Project> projectRepo,
     IRepository<Client> clientRepo,
-    IRepository<TimesheetStatus> statusRepo) : ObservableValidatorViewModel {
+    IRepository<Status> statusRepo) : ObservableValidatorViewModel {
 
     [ObservableProperty]
     private ObservableCollection<IdNameDto> _projectIdNameDtos = [];
