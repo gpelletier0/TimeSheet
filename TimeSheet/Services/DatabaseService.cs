@@ -9,10 +9,10 @@ public class DatabaseService : IDatabaseService {
     private const SQLiteOpenFlags Flags = SQLiteOpenFlags.ReadWrite |
                                           SQLiteOpenFlags.Create |
                                           SQLiteOpenFlags.SharedCache;
-    
+
     public SQLiteAsyncConnection DbAsync { get; }
     public SQLiteConnectionWithLock Db => DbAsync.GetConnection();
-    
+
     public DatabaseService(string databaseName) {
         var dbPath = Path.Combine(FileSystem.Current.AppDataDirectory, databaseName);
         DbAsync = new SQLiteAsyncConnection(dbPath, Flags, false);
@@ -22,12 +22,13 @@ public class DatabaseService : IDatabaseService {
 
     public async Task InitializeAsync() {
         await DbAsync.ExecuteAsync("PRAGMA foreign_keys = ON;");
-        
+
         await CreateClientsTable();
         await CreateProjectsTable();
         await CreateStatusesTable();
         await CreateTimesheetsTable();
         await CreateInvoicesTable();
+        await CreateProfilesTable();
     }
 
     private async Task CreateClientsTable() {
@@ -36,15 +37,15 @@ public class DatabaseService : IDatabaseService {
 
     private async Task CreateProjectsTable() {
         await DbAsync.ExecuteAsync("""
-                              CREATE TABLE IF NOT EXISTS Projects (
-                                  Id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-                                  Name TEXT(50) NOT NULL,
-                                  Description TEXT(500) NULL,
-                                  HourlyWage REAL NOT NULL,
-                                  ClientId INTEGER NULL,
-                                  FOREIGN KEY(ClientId) REFERENCES Clients(Id) ON DELETE SET NULL
-                              );
-                              """);
+                                   CREATE TABLE IF NOT EXISTS Projects (
+                                       Id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+                                       Name TEXT(50) NOT NULL,
+                                       Description TEXT(500) NULL,
+                                       HourlyWage REAL NOT NULL,
+                                       ClientId INTEGER NULL,
+                                       FOREIGN KEY(ClientId) REFERENCES Clients(Id) ON DELETE SET NULL
+                                   );
+                                   """);
 
         await DbAsync.ExecuteAsync("CREATE INDEX IF NOT EXISTS Projects_Name ON Projects (Name)");
         await DbAsync.ExecuteAsync("CREATE INDEX IF NOT EXISTS Projects_ClientId ON Projects (ClientId)");
@@ -60,7 +61,7 @@ public class DatabaseService : IDatabaseService {
             new() { Id = 3, Name = "Paid", ColorArgb = "#7BB369" },
             new() { Id = 4, Name = "Voided", ColorArgb = "#001829" }
         };
-        
+
         const string upsertSql = """
                                  INSERT INTO Statuses (Id, Name, ColorArgb)
                                  VALUES (?, ?, ?)
@@ -71,7 +72,7 @@ public class DatabaseService : IDatabaseService {
                                  WHERE Name != excluded.Name 
                                     OR ColorArgb != excluded.ColorArgb
                                  """;
-        
+
         await DbAsync.RunInTransactionAsync((s) => {
             foreach (var status in statuses) {
                 s.Execute(upsertSql, status.Id, status.Name, status.ColorArgb);
@@ -81,18 +82,18 @@ public class DatabaseService : IDatabaseService {
 
     private async Task CreateTimesheetsTable() {
         await DbAsync.ExecuteAsync("""
-                                    CREATE TABLE IF NOT EXISTS Timesheets (
-                                        Id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-                                        Date DATE NOT NULL,
-                                        StartTime TIME NOT NULL,
-                                        EndTime TIME NOT NULL,
-                                        Note TEXT(500) NULL,
-                                        StatusId INTEGER NULL,
-                                        ProjectId INTEGER NULL,
-                                        FOREIGN KEY(StatusId) REFERENCES Statuses(Id) ON DELETE SET NULL,
-                                        FOREIGN KEY(ProjectId) REFERENCES Projects(Id) ON DELETE SET NULL
-                                    );
-                              """);
+                                         CREATE TABLE IF NOT EXISTS Timesheets (
+                                             Id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+                                             Date DATE NOT NULL,
+                                             StartTime TIME NOT NULL,
+                                             EndTime TIME NOT NULL,
+                                             Note TEXT(500) NULL,
+                                             StatusId INTEGER NULL,
+                                             ProjectId INTEGER NULL,
+                                             FOREIGN KEY(StatusId) REFERENCES Statuses(Id) ON DELETE SET NULL,
+                                             FOREIGN KEY(ProjectId) REFERENCES Projects(Id) ON DELETE SET NULL
+                                         );
+                                   """);
 
         await DbAsync.ExecuteAsync("CREATE INDEX IF NOT EXISTS Timesheets_Date ON Timesheets (Date)");
         await DbAsync.ExecuteAsync("CREATE INDEX IF NOT EXISTS Timesheets_StatusId ON Timesheets (StatusId)");
@@ -101,20 +102,20 @@ public class DatabaseService : IDatabaseService {
 
     private async Task CreateInvoicesTable() {
         await DbAsync.ExecuteAsync("""
-                              CREATE TABLE IF NOT EXISTS Invoices (
-                                  Id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-                                  Number TEXT NOT NULL,
-                                  IssueDate DATE NOT NULL,
-                                  DueDate DATE NOT NULL,
-                                  ClientId INTEGER NULL,
-                                  ProjectIdArray TEXT,
-                                  TimesheetIdArray TEXT,
-                                  Comments TEXT NULL,
-                                  StatusId INTEGER NULL,
-                                  FOREIGN KEY(ClientId) REFERENCES Clients(Id) ON DELETE SET NULL ,
-                                  FOREIGN KEY(StatusId) REFERENCES Statuses(Id) ON DELETE SET NULL
-                              );
-                              """);
+                                   CREATE TABLE IF NOT EXISTS Invoices (
+                                       Id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+                                       Number TEXT NOT NULL,
+                                       IssueDate DATE NOT NULL,
+                                       DueDate DATE NOT NULL,
+                                       ClientId INTEGER NULL,
+                                       ProjectIdArray TEXT,
+                                       TimesheetIdArray TEXT,
+                                       Comments TEXT NULL,
+                                       StatusId INTEGER NULL,
+                                       FOREIGN KEY(ClientId) REFERENCES Clients(Id) ON DELETE SET NULL ,
+                                       FOREIGN KEY(StatusId) REFERENCES Statuses(Id) ON DELETE SET NULL
+                                   );
+                                   """);
 
         await DbAsync.ExecuteAsync("CREATE UNIQUE INDEX IF NOT EXISTS Invoices_Number ON Invoices (Number)");
         await DbAsync.ExecuteAsync("CREATE INDEX IF NOT EXISTS Invoices_IssueDate ON Invoices (IssueDate)");
@@ -124,4 +125,9 @@ public class DatabaseService : IDatabaseService {
         await DbAsync.ExecuteAsync("CREATE INDEX IF NOT EXISTS Invoices_ClientId_StatusId ON Invoices (ClientId, StatusId)");
         await DbAsync.ExecuteAsync("CREATE INDEX IF NOT EXISTS Invoices_Status_DueDate ON Invoices(StatusId, DueDate)");
     }
+
+    private async Task CreateProfilesTable() {
+        await DbAsync.CreateTableAsync<Profile>();
+    }
+
 }
